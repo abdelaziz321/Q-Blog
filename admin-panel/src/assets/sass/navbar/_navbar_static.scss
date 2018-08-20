@@ -1,0 +1,10 @@
+#mainNav.static-top {
+  .sidenav-toggler {
+    display: none;
+  }
+  @media (min-width: 992px) {
+    .sidenav-toggler {
+      display: flex;
+    }
+  }
+}

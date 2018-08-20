@@ -1,0 +1,13 @@
+@mixin rotate {
+  -webkit-transform: rotate(15deg);
+  -ms-transform: rotate(15deg);
+  transform: rotate(15deg);
+}
+
+
+@mixin placeholder {
+  &::-webkit-input-placeholder { @content }
+  &:-moz-placeholder           { @content }
+  &::-moz-placeholder          { @content }
+  &:-ms-input-placeholder      { @content }  
+}

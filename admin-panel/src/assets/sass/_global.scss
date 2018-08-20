@@ -1,0 +1,221 @@
+// Global styling for this template
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  overflow-x: hidden;
+
+  .tooltip.navbar-sidenav-tooltip{
+    left: 80px !important;
+  }
+}
+
+body.sticky-footer {
+  margin-bottom: $sticky-footer-height;
+  .content-wrapper {
+    min-height: calc(100vh - #{$sticky-footer-height} - #{$navbar-base-height});
+  }
+}
+
+body.fixed-nav {
+  padding-top: $navbar-base-height;
+}
+
+.loading {
+  position: fixed;
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  justify-content: center;
+  align-items: center;
+  font-size: 2em;
+  background: linear-gradient(110deg, #266aa2 0%, #266aa2 18%, #2d71a8 20%, #266aa2 20%, #266aa2 75%, #2d71a8 80%, #266aa2 80%, #2d71a8 100%);
+  color: $gray-100;
+
+  svg {
+    color: $yellow;
+  }
+}
+
+.content-wrapper {
+  min-height: calc(100vh - #{$sticky-footer-height});
+  background-color: $gray-400 !important;
+  padding-top: 1rem;
+}
+
+a,a:hover,a:focus{
+    text-decoration: none !important;
+    outline: 0 !important;
+}
+
+// Scroll to top button
+.scroll-to-top {
+  position: fixed;
+  right: 15px;
+  bottom: 3px;
+
+  display: none;
+
+  width: 50px;
+  height: 50px;
+
+  text-align: center;
+
+  color: white;
+  background: fade-out($gray-800, .5);
+
+  line-height: 45px;
+  &:focus,
+  &:hover {
+    color: white;
+  }
+  &:hover {
+    background: $gray-800;
+  }
+  i {
+    font-weight: 800;
+  }
+}
+
+.table {
+  font-size: 0.9em;
+  tbody {
+    color: $gray-700;
+  }
+}
+
+
+
+.btn-group .btn-warning{
+  background-color: #f0e300;
+  border-color: #efe200;
+  color: rgba(0,0,0,0.7);
+
+  &:hover {
+    background-color: #f0ed00;
+  }
+}
+
+
+
+// message component
+.message {
+  position: fixed;
+  width: 40%;
+  left: 30%;
+  border: 1px solid transparent;
+  top: 70px;
+  z-index: 1060;
+  font-size: 0.9em;
+
+  .message-header {
+    color: #eee;
+    padding: 4px 10px;
+    font-weight: 900;
+
+    button.close {
+      color: $gray-200;
+      background-color: transparent;
+      border-width: 0;
+      float: right;
+      padding: 2px 0;
+      font-size: 1.2em;
+
+      &:hover {
+        color: $gray-100;
+      }
+    }
+  }
+
+  .message-body {
+    padding: 10px;
+    font-size: 0.9em;
+    background-color: rgba(255,255,255,0.95);
+
+    > p {
+      margin: 0;
+
+      ul {
+        margin: 0;
+        padding-left: 0;
+        list-style: none;
+
+        li > ul {
+          padding-left: 10px;
+        }
+      }
+    }
+
+    > button {
+      margin-left: auto;
+    }
+  }
+}
+
+// modal component
+.modal {
+  .modal-dialog {
+    .modal-content {
+      border-radius: 0;
+      padding: 2px;
+      border-width: 0;
+
+      .modal-header {
+        padding: 0.5rem 1rem;
+        border-width: 0;
+        color: $gray-100;
+
+        h4 {
+          font-size: 1em;
+          font-weight: 900;
+        }
+        button {
+          color: #fff;
+          font-size: 1.2em;
+          padding: 18px;
+        }
+      }
+
+      .modal-body {
+        padding: 0.5rem 1rem;
+        border-width: 0;
+        color: $gray-800;
+        font-size: 0.9em;
+        background-color: $gray-200;
+      }
+
+      .form-footer {
+        padding: 0.5rem 0;
+        border-top: 1px solid rgba(0,0,0,0.1);
+      }
+    }
+  }
+}
+.modal.fade .modal-dialog {
+  transform: translate3d(0, 100vh, 0);
+}
+
+.modal.show .modal-dialog {
+  transform: translate3d(0, calc(100vh - (100% + 100px)) , 0);
+}
+.modal-backdrop {
+  background-color: transparent;
+}
+
+.table-information {
+  background-color: $gray-200;
+
+  > tr td:last-of-type {
+    color: $gray-600;
+  }
+}
+
+.user_page .avatar {
+  padding: 25px;
+  background-color: $gray-200;
+}

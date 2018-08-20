@@ -1,0 +1,85 @@
+-----------------------------------------------------------------------------------------------------------------------
+* author    : Abdelaziz Sliem
+* email     : abdelazizmahmoud321@gmail.com
+* project   : blog-system
+* version   : 1.0.0
+-----------------------------------------------------------------------------------------------------------------------
+assalamu alaikum ^‿^
+this is a simple blog and admin panel built using Laravel5.6 - VueJS.
+I'm building this just for learning purpose.
+feel free to contribute, copy, read or use it in whatever you want.
+-----------------------------------------------------------------------------------------------------------------------
+
+|- the system consists of 2 main parts:
+  1- admin panel for only admins | moderators | authors:
+    > users       => admin can delete|ban users also can assign a role to them to be author or moderator.
+    > categories  => admin create categories where authors will write posts in.
+                  => each post belongs to only one category.
+    > posts       => posts cant be published to the blog until the admin|moderator allows.
+                  => many posts can have the same tag, and up to 7 tags can assigned to the same post.
+    > comments    => admin can show all the latest comments and only delete them (not updating).
+                  => moderator can see the comments in its category and also can delete them.
+
+  2- the regular site for all users:
+    > show all the published posts with a filter input.
+    > show a post with its comments.
+    > contact page.
+    > about us page, terms of us... bla bala bla.
+
+== notes for posts:
+  -- authors write posts then admins or moderators accepts to publish or delete the posts,
+     so the regular user can only show the published posts.
+
+  -- the filtering form for posts allows the user to filter posts by using:
+     categories - tags - specific time - for a particular author
+     top recommended - recently published
+
+  -- posts will filtered and appeared with no reload page and with maximum 10 posts per page.
+
+== notes for users:
+  -- 5 types of users [admins, moderators, authors, regular-users, banned-users]
+    > admin         => have total control over the system - accept posts to be published or delete them.
+    > moderator     => have total control over a specific category assigned to him by the admin.
+                       accept posts to be published or delete them only for his category.
+    > author        => create posts - delete-comment on its posts.
+    > regular-user  => make a comment - recommend|unrecommend a post - filter and show the published posts.
+    > banned-user   => can't add any comments or recommend posts or commnets,
+                       just view the content and unrecommend the posts recommended by him.
+
+  -- moderator is an author in its category => so he can't make a post in a different category.
+  -- only authors can update their posts.
+  -- admins can remove or assigned new tags to a particular post,
+     also the moderator can do but only for the posts belongs to their category
+
+  -- each user can update its comment, post and recommend|unrecommend posts
+     also vote [up, down] comments of the others users.
+
+  -- permissions:
+   ____________________________________________________________________________________________
+  |     permission     |   admin   |   moderator   |   author    | regular-user | banned-user |
+  |--------------------|-----------|---------------|-------------|--------------|-------------|
+  | > create-category  |     ✓     |       x       |      x      |      x       |      x      |
+  |   delete-category  |     ✓     |       x       |      x      |      x       |      x      |
+  |   update-category  |     ✓     |       ✓ cat   |      x      |      x       |      x      |
+  | > update-tag       |     ✓     |       x       |      x      |      x       |      x      |
+  |   delete-tag       |     ✓     |       x       |      x      |      x       |      x      |
+  | > create-post      |     ✓     |       ✓ cat   |      ✓      |      x       |      x      |
+  |   update-post      | ✓ tag|own | ✓ tag cat|own |      ✓ own  |      x       |      x      |
+  |   delete-post      |     ✓     |       ✓       |      ✓ own  |      x       |      x      |
+  |   publish-post     |     ✓     |       ✓ cat   |      x      |      x       |      x      |
+  | > ban-user         |     ✓     |       x       |      x      |      x       |      x      |
+  |   unban-user       |     ✓     |       x       |      x      |      x       |      x      |
+  |   delete-user      |     ✓     |       x       |      x      |      x       |      x      |
+  |   assign-role      |     ✓     |       x       |      x      |      x       |      x      |
+  | > make-comment     |     ✓     |       ✓       |      ✓      |      ✓       |      x      |
+  |   update-comment   |     ✓ own |       ✓ own   |      ✓ own  |      ✓ own   |      x      |
+  |   delete-comment   |     ✓     |   ✓ own|cat   |  ✓ own|post |      ✓ own   |      ✓ own  |
+  | > recommend-post   |     ✓     |       ✓       |      ✓      |      ✓       |      x      |
+  |   unrecommend-post |     ✓     |       ✓       |      ✓      |      ✓       |      ✓      |
+  |____________________|___________|_______________|_____________|______________|_____________|
+
+  ** update-tag ✓               => update the name of the tag that already assigned to posts.
+  ** update-post ✓ tag|own      => he can delete or assign tags to all posts && can update his posts.
+  ** update-post ✓ tag cat|own  => he can delete or assign tags to all posts in his category && can update his posts.
+
+-----------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,63 @@
+{
+  "name": "admin-panel",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.1",
+    "@fortawesome/free-brands-svg-icons": "^5.1.1",
+    "@fortawesome/free-regular-svg-icons": "^5.1.1",
+    "@fortawesome/free-solid-svg-icons": "^5.1.1",
+    "@fortawesome/vue-fontawesome": "^0.1.1",
+    "@websanova/vue-auth": "^2.21.14-beta",
+    "axios": "^0.18",
+    "bootstrap": "^4.0.0",
+    "jquery": "^3.2",
+    "lodash": "^4.17.4",
+    "popper.js": "^1.12",
+    "vue": "^2.5.16",
+    "vue-2-breadcrumbs": "^0.3.1",
+    "vue-axios": "^2.1.2",
+    "vue-multiselect": "^2.1.0",
+    "vue-router": "^3.0.1",
+    "vue-wysiwyg": "^1.7.2",
+    "vuejs-paginate": "^2.0.0",
+    "vuex": "^3.0.1"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.0.0-rc.10",
+    "@vue/cli-plugin-eslint": "^3.0.0-rc.10",
+    "@vue/cli-service": "^3.0.0-rc.10",
+    "node-sass": "^4.9.2",
+    "sass-loader": "^7.1.0",
+    "vue-template-compiler": "^2.5.16"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
