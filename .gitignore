@@ -1,0 +1,20 @@
+# Git Ignore for Top Level
+.idea
+
+# Git Ignore for Admin-Panel
+admin-panel/node_modules/
+
+# Git Ignore for Backend
+backend/node_modules
+backend/public/hot
+backend/public/storage
+backend/storage/*.key
+backend/vendor
+backend/.idea
+backend/.vscode
+backend/.vagrant
+backend/Homestead.json
+backend/Homestead.yaml
+backend/npm-debug.log
+backend/yarn-error.log
+backend/.env
