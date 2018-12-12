@@ -3,16 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Tag;
-use App\User;
 use App\Category;
+
 use Illuminate\Http\Request;
+
 use App\Http\Resources\TagResource;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\CategorySearchResource;
 
+use App\Repositories\Tag\RepositoryInterface as TagRepo;
+use App\Repositories\User\RepositoryInterface as UserRepo;
+use App\Repositories\Category\RepositoryInterface as CategoryRepo;
+
 class HomeController extends Controller
 {
+    private $tagRepo;
+    private $userRepo;
+    private $categoryRepo;
+
+    public function __construct(TagRepo $tagRepo, UserRepo $userRepo, CategoryRepo $categoryRepo)
+    {
+        $this->tagRepo = $tagRepo;
+        $this->userRepo = $userRepo;
+        $this->categoryRepo = $categoryRepo;
+    }
+
     /**
      * get top 5|8|5 categories|tags|authors have posts
      *
@@ -20,27 +36,9 @@ class HomeController extends Controller
      */
     public function sidebar()
     {
-        $tags = Tag::withCount(['posts' => function ($query) {
-	                     $query->published();
-                   }])
-                   ->orderBy('posts_count', 'desc')
-                   ->take(8)
-                   ->get();
-
-        $authors = User::where('privilege', '>', 1)
-                       ->withCount(['posts' => function ($query) {
-		                       $query->published();
-		                   }])
-                       ->orderBy('posts_count', 'desc')
-                       ->take(5)
-                       ->get();
-
-       $categories = Category::withCount(['posts' => function ($query) {
-                                 $query->published();
-	                           }])
-                             ->orderBy('posts_count', 'desc')
-                             ->take(5)
-                             ->get();
+        $tags = $this->tagRepo->getPaginatedTags(8);
+        $authors = $this->userRepo->getPaginatedUsers(5);
+        $categories = $this->categoryRepo->getPaginatedCategories(5);
 
         return response()->json([
             'tags'       => TagResource::collection($tags),
@@ -57,15 +55,9 @@ class HomeController extends Controller
     public function searchCategories(Request $request)
     {
         $q = $request->query('q');
-        $categories = Category::where('title', 'like', "%{$q}%")
-                     ->get();
+        $categories = $this->categoryRepo->searchUsingTitle($q);
 
-
-        $categories->transform(function ($category) {
-            return new CategorySearchResource($category);
-        });
-
-        return $categories;
+        return CategorySearchResource::collection($categories);
     }
 
     /**
@@ -76,13 +68,9 @@ class HomeController extends Controller
     public function searchTags(Request $request)
     {
         $q = $request->query('q');
-        $tags = Tag::where('name', 'like', "%{$q}%")->get();
+        $tags = $this->tagRepo->searchUsingTitle($q);
 
-        $tags->transform(function ($tag) {
-            return new TagResource($tag);
-        });
-
-        return $tags;
+        return TagResource::collection($tags);
     }
 
 
