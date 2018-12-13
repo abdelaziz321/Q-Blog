@@ -7,6 +7,16 @@ use App\User;
 class Repository implements RepositoryInterface
 {
     /**
+     * the authenticated user
+     */
+    private $user;
+
+    public function __construct()
+    {
+        $this->user = auth()->user();
+    }
+
+    /**
      * get pageinated unbanned users
      *
      * @param  integer $limit
@@ -24,4 +34,29 @@ class Repository implements RepositoryInterface
             ->skip($offset)
             ->get();
     }
+
+    /**
+     * the authenticated user recommend the given post
+     *
+     * @param  string $slug
+     * @return void
+     */
+    public function recommend(string $slug)
+    {
+        $id = \App\Post::where('slug', $slug)->pluck('id')->all();
+        $this->user->recommendations()->sync($id, false);
+    }
+
+    /**
+     * the authenticated user unrecommend the given post
+     *
+     * @param  string $slug
+     * @return void
+     */
+    public function unrecommend(string $slug)
+    {
+        $id = \App\Post::where('slug', $slug)->pluck('id')->all();
+        $this->user->recommendations()->detach($id);
+    }
+
 }
