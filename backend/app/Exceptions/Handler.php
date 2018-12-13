@@ -50,15 +50,21 @@ class Handler extends ExceptionHandler
             return response()->json([
                 'message' => "what are you doing here -_-"
             ], 404);
-        } elseif ($exception instanceof \Illuminate\Auth\AuthenticationException) {
+        }
+        elseif ($exception instanceof \Illuminate\Auth\AuthenticationException)
+        {
             return response()->json([
                 'message' => "unauthenticated user! please login first"
             ], 400);
-        } elseif ($exception instanceof \Illuminate\Auth\Access\AuthorizationException) {
+        }
+        elseif ($exception instanceof \Illuminate\Auth\Access\AuthorizationException)
+        {
             return response()->json([
                 'message' => "access denied, you are not allowed to make this action"
             ], 403);
-        } elseif ($exception instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException) {
+        }
+        elseif ($exception instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException)
+        {
             return response()->json([
                 'message' => "Token Signature could not be verified"
             ], 401);
