@@ -9,9 +9,17 @@ use App\Http\Resources\PostResource;
 use App\Http\Resources\PostRowResource;
 use App\Http\Resources\CommentResource;
 use \Illuminate\Auth\Access\AuthorizationException;
+use App\Repositories\Post\RepositoryInterface as PostRepo;
 
 class PostController extends Controller
 {
+    private $postRepo;
+
+    public function __construct(PostRepo $postRepo)
+    {
+        $this->postRepo = $postRepo;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -19,63 +27,66 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
-        ########################################################
-        #===             It works, don't touch.             ===#
-        ########################################################
-        $request->validate([
-            'views'           => ['regex:#(ASC|DESC)#i'],
-            'date'            => ['regex:#(ASC|DESC)#i'],
-            'comments'        => ['regex:#(ASC|DESC)#i'],
-            'recommendations' => ['regex:#(ASC|DESC)#i']
+        $rules = $request->validate([
+            'views'           => ['regex:#^(ASC|DESC)$#i'],
+            'date'            => ['regex:#^(ASC|DESC)$#i'],
+            'comments'        => ['regex:#^(ASC|DESC)$#i'],
+            'recommendations' => ['regex:#^(ASC|DESC)$#i']
         ]);
 
-        $query = Post::query();
+        dd($rules);
 
-        // views
-        $query->when($request->has('views'), function ($query) use ($request) {
-            return $query->orderBy('views', $request->query('views', 'DESC'));
-        });
-        // date
-        $query->when($request->has('date'), function ($query) use ($request) {
-            return $query->orderBy('id', $request->query('date', 'DESC'));
-        });
-        // comments
-        $query->when($request->has('comments'), function ($query) use ($request) {
-            return $query->orderBy('comments_count', $request->query('comments', 'DESC'));
-        });
-        // recommendations
-        $query->when($request->has('recommendations'), function ($query) use ($request) {
-            return $query->orderBy('recommendations_count', $request->query('recommendations', 'DESC'));
-        });
-        // title
-        $query->when($request->has('title'), function ($query) use ($request) {
-            return $query->where('title', 'LIKE', "%{$request->query('title', '')}%");
-        });
-        // author
-        $query->when($request->has('author'), function ($query) use ($request) {
-            return $query->whereHas('author', function ($query) use ($request) {
-                $query->where('slug', $request->query('author', ''));
-            });
-        });
-        // category
-        $query->when($request->has('category'), function ($query) use ($request) {
-            return $query->whereHas('category', function ($query) use ($request) {
-                $query->where('slug', $request->query('category', ''));
-            });
-        });
-        // tags
-        $query->when($request->has('tags'), function ($query) use ($request) {
-            return $query->whereHas('tags', function ($query) use ($request) {
-                $tags = \App\Tag::whereIn('slug', $request->query('tags', ''))->get();
-                $tagsIds = $tags->pluck('id')->all();
-                $query->whereIn('id', $tagsIds);
-            });
-        });
+        $posts = $this->postRepo->getSortedPaginatedPosts(
+            $rules, 8, $request->query('page', 1)
+        );
 
-        $posts = $query->with(['category', 'author'])
-                       ->withCount(['comments', 'recommendations'])
-                       ->published()
-                       ->paginate(8);
+        // $query = Post::query();
+        //
+        // // views
+        // $query->when($request->has('views'), function ($query) use ($request) {
+        //     return $query->orderBy('views', $request->query('views', 'DESC'));
+        // });
+        // // date
+        // $query->when($request->has('date'), function ($query) use ($request) {
+        //     return $query->orderBy('id', $request->query('date', 'DESC'));
+        // });
+        // // comments
+        // $query->when($request->has('comments'), function ($query) use ($request) {
+        //     return $query->orderBy('comments_count', $request->query('comments', 'DESC'));
+        // });
+        // // recommendations
+        // $query->when($request->has('recommendations'), function ($query) use ($request) {
+        //     return $query->orderBy('recommendations_count', $request->query('recommendations', 'DESC'));
+        // });
+        // // title
+        // $query->when($request->has('title'), function ($query) use ($request) {
+        //     return $query->where('title', 'LIKE', "%{$request->query('title', '')}%");
+        // });
+        // // author
+        // $query->when($request->has('author'), function ($query) use ($request) {
+        //     return $query->whereHas('author', function ($query) use ($request) {
+        //         $query->where('slug', $request->query('author', ''));
+        //     });
+        // });
+        // // category
+        // $query->when($request->has('category'), function ($query) use ($request) {
+        //     return $query->whereHas('category', function ($query) use ($request) {
+        //         $query->where('slug', $request->query('category', ''));
+        //     });
+        // });
+        // // tags
+        // $query->when($request->has('tags'), function ($query) use ($request) {
+        //     return $query->whereHas('tags', function ($query) use ($request) {
+        //         $tags = \App\Tag::whereIn('slug', $request->query('tags', ''))->get();
+        //         $tagsIds = $tags->pluck('id')->all();
+        //         $query->whereIn('id', $tagsIds);
+        //     });
+        // });
+        //
+        // $posts = $query->with(['category', 'author'])
+        //                ->withCount(['comments', 'recommendations'])
+        //                ->published()
+        //                ->paginate(8);
 
         $posts->getCollection()->transform(function ($post) {
             return new PostRowResource($post);
