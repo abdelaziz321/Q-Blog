@@ -28,7 +28,7 @@ class Repository implements RepositoryInterface
      * @param  string $q the string by which we will search
      * @return Illuminate\Database\Eloquent\Collection
      */
-    public function searchUsingTitle(string $q)
+    public function search(string $q)
     {
         return Tag::where('name', 'like', "%{$q}%")
             ->limit(10)

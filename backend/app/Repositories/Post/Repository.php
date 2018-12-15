@@ -7,6 +7,13 @@ use App\Post;
 class Repository implements RepositoryInterface
 {
     /**
+     * The total number of items before slicing.
+     *
+     * @var int
+     */
+    private $total;
+
+    /**
      * get pageinated posts sorted according to the given rules array
      * the array will be something like:
      * ['views' => 'DESC', 'title' => 'vue']
@@ -67,12 +74,14 @@ class Repository implements RepositoryInterface
             });
         }
 
-        return $query->with(['category', 'author'])
+        $posts = $query->with(['category', 'author'])
             ->withCount(['comments', 'recommendations'])
             ->published()
-            ->take($limit)
-            ->skip($offset)
             ->get();
+
+        $this->total = $posts->count();
+
+        return $posts->slice($offset, $limit);
     }
 
     /**
@@ -113,13 +122,13 @@ class Repository implements RepositoryInterface
 
 
     /**
-     * return the total posts in the DB
+     * Get the total number of items being paginated.
      *
-     * @return integet
+     * @return int
      */
     public function getTotalPosts()
     {
-        return Post::count();
+        return $this->total;
     }
 
     /**

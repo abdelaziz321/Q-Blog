@@ -18,27 +18,16 @@ use App\Repositories\Category\RepositoryInterface as CategoryRepo;
 
 class HomeController extends Controller
 {
-    private $tagRepo;
-    private $userRepo;
-    private $categoryRepo;
-
-    public function __construct(TagRepo $tagRepo, UserRepo $userRepo, CategoryRepo $categoryRepo)
-    {
-        $this->tagRepo = $tagRepo;
-        $this->userRepo = $userRepo;
-        $this->categoryRepo = $categoryRepo;
-    }
-
     /**
      * get top 5|8|5 categories|tags|authors have posts
      *
      * @return Illuminate\Http\JsonResponse
      */
-    public function sidebar()
+    public function sidebar(TagRepo $tagRepo, UserRepo $userRepo, CategoryRepo $categoryRepo)
     {
-        $tags = $this->tagRepo->getPaginatedTags(8);
-        $authors = $this->userRepo->getPaginatedUsers(5);
-        $categories = $this->categoryRepo->getPaginatedCategories(5);
+        $tags = $tagRepo->getPaginatedTags(8);
+        $authors = $userRepo->getPaginatedUsers(5);
+        $categories = $categoryRepo->getPaginatedCategories(5);
 
         return response()->json([
             'tags'       => TagResource::collection($tags),
@@ -52,10 +41,10 @@ class HomeController extends Controller
      *
      * @return Illuminate\Http\JsonResponse
      */
-    public function searchCategories(Request $request)
+    public function searchCategories(Request $request, CategoryRepo $categoryRepo)
     {
         $q = $request->query('q');
-        $categories = $this->categoryRepo->searchUsingTitle($q);
+        $categories = $categoryRepo->search($q);
 
         return CategorySearchResource::collection($categories);
     }
@@ -65,10 +54,10 @@ class HomeController extends Controller
      *
      * @return Illuminate\Http\JsonResponse
      */
-    public function searchTags(Request $request)
+    public function searchTags(Request $request, TagRepo $tagRepo)
     {
         $q = $request->query('q');
-        $tags = $this->tagRepo->searchUsingTitle($q);
+        $tags = $tagRepo->search($q);
 
         return TagResource::collection($tags);
     }
