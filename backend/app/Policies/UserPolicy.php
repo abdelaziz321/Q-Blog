@@ -35,15 +35,15 @@ class UserPolicy
     }
 
     /**
-     * Determine whether the user can update his profile.
+     * Determine whether the user can update the profile which has the given slug.
      *
      * @param  \App\User  $user
-     * @param  \App\User  $profile
+     * @param  string     $slug the slug of the profile user want to updated
      * @return mixed
      */
-    public function update(User $user, User $profile)
-    {    
-        return $user->id == $profile->id;
+    public function update(User $user, string $slug)
+    {
+        return $user->slug === $slug;
     }
 
     /**

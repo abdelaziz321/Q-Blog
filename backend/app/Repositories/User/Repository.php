@@ -59,4 +59,78 @@ class Repository implements RepositoryInterface
         $this->user->recommendations()->detach($id);
     }
 
+    /**
+     * @param  string $q the string by which we will search
+     * @return Illuminate\Database\Eloquent\Collection
+     */
+    public function search(string $q)
+    {
+        return User::has('posts')
+            ->where(function ($query) use ($q) {
+                $query->where('username', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
+            })
+            ->limit(10)
+            ->get();
+    }
+
+
+    /**
+     * check if the given $slug exists in the users table.
+     * we don't care if the $except slug exists or not.
+     *
+     * @param  string $slug
+     * @param  string $except
+     * @return int
+     */
+    public function checkIfExist(string $slug, string $except = '')
+    {
+        return User::where('slug', $slug)
+            ->where('slug', '!=', $except)
+            ->count();
+    }
+
+    /**
+     * return the current authenticated user
+     *
+     * @return \App\User
+     */
+    public function user()
+    {
+        return $this->user;
+    }
+
+    /**
+     * update the authenticated user
+     *
+     * @param  array  $data
+     * @return void
+     */
+    public function update(array $data)
+    {
+        $this->user->slug = $data['slug'];
+        $this->user->username = $data['username'];
+        $this->user->description = $data['description'];
+
+        if ( isset($data['avatar']) ) {
+            $this->user->avatar = $data['avatar'];
+        }
+
+        $this->user->save();
+    }
+
+    /**
+     * Determine if the user has an ability.
+     *
+     * @param  array $args
+     * @return boolean
+     */
+    public function can(...$args)
+    {
+        $action = array_shift($args);
+        array_unshift($args, User::class);
+
+        return $this->user->can($action, $args);
+    }
+
 }
