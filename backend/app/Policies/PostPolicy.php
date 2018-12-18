@@ -11,7 +11,6 @@ class PostPolicy
 {
     use HandlesAuthorization;
 
-
     /**
      * Determine whether the user can view the post.
      *
@@ -122,5 +121,20 @@ class PostPolicy
         }
 
         return false;
+    }
+
+    public function recommend(User $user, Post $post)
+    {
+        # banned user can't recommend
+        if ($user->isBanned()) {
+            return false;
+        }
+
+        # user can't recommend his own post
+        if ($user->id === $post->user_id) {
+            return false;
+        }
+
+        return true;
     }
 }

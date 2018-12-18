@@ -22,7 +22,7 @@ class UpdateUserRequest extends FormRequest
     public function authorize()
     {
         $urlSlug = $this->route('user');
-        return $this->userRepo->can('update', $urlSlug);
+        return $this->userRepo->can('update', ['App\\User', $urlSlug]);
     }
 
     /**

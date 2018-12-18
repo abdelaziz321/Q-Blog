@@ -32,7 +32,7 @@ class PostResource extends JsonResource
         if (!$this->relationLoaded('tags')) {
             return;
         }
-        $tags = $this->tags()->get();
+        $tags = $this->tags;
 
         if (empty($tags)) {
             return;

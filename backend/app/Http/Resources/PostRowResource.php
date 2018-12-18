@@ -17,8 +17,8 @@ class PostRowResource extends JsonResource
         $published_at = null;
         if ($this->published) {
           $published_at = now()
-                          ->createFromFormat('Y-m-d H:i:s', $this->published_at)
-                          ->diffForHumans();
+              ->createFromFormat('Y-m-d H:i:s', $this->published_at)
+              ->diffForHumans();
         }
 
         $array = [
@@ -48,7 +48,7 @@ class PostRowResource extends JsonResource
             return;
         }
 
-        $author = $this->author()->first();
+        $author = $this->author;
         if (empty($author)) {
             return;
         }
@@ -69,7 +69,7 @@ class PostRowResource extends JsonResource
             return;
         }
 
-        $category = $this->category()->first();
+        $category = $this->category;
         if (empty($category)) {
             return;
         }

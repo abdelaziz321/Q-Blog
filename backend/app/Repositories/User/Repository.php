@@ -36,30 +36,6 @@ class Repository implements RepositoryInterface
     }
 
     /**
-     * the authenticated user recommend the given post
-     *
-     * @param  string $slug
-     * @return void
-     */
-    public function recommend(string $slug)
-    {
-        $id = \App\Post::where('slug', $slug)->pluck('id')->all();
-        $this->user->recommendations()->sync($id, false);
-    }
-
-    /**
-     * the authenticated user unrecommend the given post
-     *
-     * @param  string $slug
-     * @return void
-     */
-    public function unrecommend(string $slug)
-    {
-        $id = \App\Post::where('slug', $slug)->pluck('id')->all();
-        $this->user->recommendations()->detach($id);
-    }
-
-    /**
      * @param  string $q the string by which we will search
      * @return Illuminate\Database\Eloquent\Collection
      */
@@ -127,10 +103,6 @@ class Repository implements RepositoryInterface
      */
     public function can(...$args)
     {
-        $action = array_shift($args);
-        array_unshift($args, User::class);
-
-        return $this->user->can($action, $args);
+        return $this->user->can(...$args);
     }
-
 }

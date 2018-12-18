@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\PostsFilterReuqest;
 use App\Http\Resources\PostResource;
 use App\Http\Resources\CommentResource;
+use App\Http\Requests\PostsFilterReuqest;
 use App\Http\Resources\PaginatedPostCollection;
 use \Illuminate\Auth\Access\AuthorizationException;
 use App\Repositories\Post\RepositoryInterface as PostRepo;
@@ -64,12 +64,11 @@ class PostController extends Controller
      */
     public function recommend(string $slug, UserRepo $userRepo)
     {
-        // the banned user cant recommend any post
-        if(auth()->user()->isBanned()) {
-            throw new AuthorizationException("Error");
-        }
+        $post = $this->postRepo->get($slug);
 
-        $userRepo->recommend($slug);
+        $userRepo->can('recommend', $post);
+
+        $this->postRepo->recommend($post->id);
 
         return response()->json([
             'message' => "the post has been recommended successfully"
@@ -84,7 +83,11 @@ class PostController extends Controller
      */
     public function unrecommend(string $slug, UserRepo $userRepo)
     {
-        $userRepo->unrecommend($slug);
+        $post = $this->postRepo->get($slug);
+
+        $userRepo->can('recommend', $post);
+
+        $this->postRepo->unrecommend($post->id);
 
         return response()->json([
             'message' => "the post has been unrecommended successfully"
