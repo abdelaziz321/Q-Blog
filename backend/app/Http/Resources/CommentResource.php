@@ -23,14 +23,14 @@ class CommentResource extends JsonResource
         $array = [
             'id'         => $this->id,
             'body'       => $this->body,
-            'votes'      => $this->votes ?? 0,
+            'votes'      => $this->votes_count ?? 0,
             'voted'      => $this->voted,
             'created_at' => $createdAt,
             'updated_at' => $updatedAt,
             'user'       => [
-                'slug' => $this->user()->first()->slug,
-                'name' => $this->user()->first()->username,
-                'avatar' => $this->user()->first()->avatar
+                'slug' => $this->user->slug,
+                'name' => $this->user->username,
+                'avatar' => $this->user->avatar
             ]
         ];
 
@@ -48,7 +48,7 @@ class CommentResource extends JsonResource
             return;
         }
 
-        $post = $this->post()->first();
+        $post = $this->post;
         if (empty($post)) {
             return;
         }

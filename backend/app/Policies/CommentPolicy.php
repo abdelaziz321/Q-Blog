@@ -27,13 +27,13 @@ class CommentPolicy
         return $user->privilege > 0;
     }
 
-    public function update(User $user, $comment)
+    public function update(User $user, Comment $comment)
     {
         # owner
         if ($user->id == $comment->user_id) {
             return true;
         }
-        
+
         return false;
     }
 

@@ -23,7 +23,7 @@ class RepoServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $repos = ['Tag', 'User', 'Category', 'Post'];
+        $repos = ['User', 'Category', 'Post', 'Tag', 'Comment'];
 
         foreach ($repos as $repo) {
             $this->app->singleton(

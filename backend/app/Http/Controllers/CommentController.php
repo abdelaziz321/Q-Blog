@@ -2,25 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Comment;
 use App\Http\Requests\CommentRequest;
 use App\Http\Resources\CommentResource;
+use App\Repositories\User\RepositoryInterface as UserRepo;
+use App\Repositories\Comment\RepositoryInterface as CommentRepo;
 
 class CommentController extends Controller
 {
+    private $commentRepo;
+
+    public function __construct(CommentRepo $commentRepo)
+    {
+        $this->commentRepo = $commentRepo;
+    }
+
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  App\Http\Requests\CommentRequest  $request
      * @return \Illuminate\Http\Response
      */
     public function store(CommentRequest $request)
     {
         $data = $request->all();
-        $data['user_id'] = auth()->user()->id;
 
-        $comment = Comment::create($data);
-        $comment->votes = 0;
+        $comment = $this->commentRepo->create($data);
 
         return response()->json([
             'comment' => new CommentResource($comment)
@@ -30,14 +36,13 @@ class CommentController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  App\Http\Requests\CommentRequest  $request
+     * @param  int  $id the id of the comment
      * @return \Illuminate\Http\Response
      */
-    public function update(CommentRequest $request, Comment $comment)
+    public function update(CommentRequest $request, int $id)
     {
-        $comment->body = $request->body;
-        $comment->save();
+        $this->commentRepo->update($id, $request->body);
 
         return response()->json([
             'comment' => new CommentResource($comment)
@@ -47,40 +52,50 @@ class CommentController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int  $id the id of the comment
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Comment $comment)
+    public function destroy(int $id, UserRepo $userRepo)
     {
-        $this->authorize('delete', $comment);
+        $comment = $this->commentRepo->get($id);
 
-        $comment->delete();
+        $userRepo->can('delete', $comment);
+
+        $this->commentRepo->delete($id);
 
         return response()->json([
             'message' => "your comment has been deleted successfully"
         ], 200);
     }
 
-    public function vote(Comment $comment)
+    /**
+     * the authenticated user vote up the given comment
+     *
+     * @param  int $id the id of the comment
+     * @return \Illuminate\Http\Response
+     */
+    public function vote(int $id, UserRepo $userRepo)
     {
-        $this->authorize('createOrVote', Comment::class);
+        $userRepo->can('createOrVote', 'App\\Comment');
 
-        $comment->votes()->syncWithoutDetaching([
-            auth()->user()->id => ['vote' => 1]
-        ]);
+        $this->commentRepo->vote($id, 1);
 
         return response()->json([
             'message' => "you voted up this comment successfully"
         ], 200);
     }
 
-    public function unvote(Comment $comment)
+    /**
+     * the authenticated user vote down the given comment
+     *
+     * @param  int $id the id of the comment
+     * @return \Illuminate\Http\Response
+     */
+    public function unvote(int $id, UserRepo $userRepo)
     {
-        $this->authorize('createOrVote', Comment::class);
+        $userRepo->can('createOrVote', 'App\\Comment');
 
-        $comment->votes()->syncWithoutDetaching([
-            auth()->user()->id => ['vote' => -1]
-        ]);
+        $this->commentRepo->vote($id, -1);
 
         return response()->json([
             'message' => "you voted down this comment successfully"
