@@ -46,7 +46,8 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-        if($exception instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+        if($exception instanceof \Illuminate\Database\Eloquent\ModelNotFoundException
+        || $exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
             return response()->json([
                 'message' => "what are you doing here -_-"
             ], 404);
