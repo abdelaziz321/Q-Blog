@@ -3,18 +3,18 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Repositories\User\RepositoryInterface as UserRepo;
 use App\Repositories\Comment\RepositoryInterface as CommentRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
 class CommentRequest extends FormRequest
 {
-    private $userRepo;
     private $commentRepo;
+    private $authUserRepo;
 
-    public function __construct(UserRepo $userRepo, CommentRepo $commentRepo)
+    public function __construct(AuthUserRepo $authUserRepo, CommentRepo $commentRepo)
     {
-        $this->userRepo = $userRepo;
         $this->commentRepo = $commentRepo;
+        $this->authUserRepo = $authUserRepo;
     }
 
     /**
@@ -26,10 +26,10 @@ class CommentRequest extends FormRequest
     {
         if ($this->method() == 'PUT') {
             $comment = $this->commentRepo->get($this->route('comment'));
-            return $this->userRepo->can('update', $comment);
+            return $this->authUserRepo->can('update', $comment);
         }
         else {
-            return $this->userRepo->can('createOrVote', 'App\\Comment');
+            return $this->authUserRepo->can('createOrVote', 'App\\Comment');
         }
     }
 

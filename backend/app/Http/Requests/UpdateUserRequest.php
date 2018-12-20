@@ -3,15 +3,15 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Repositories\User\RepositoryInterface as UserRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
 class UpdateUserRequest extends FormRequest
 {
-    private $userRepo;
+    private $authUserRepo;
 
-    public function __construct(UserRepo $userRepo)
+    public function __construct(AuthUserRepo $authUserRepo)
     {
-        $this->userRepo = $userRepo;
+        $this->authUserRepo = $authUserRepo;
     }
 
     /**
@@ -22,7 +22,7 @@ class UpdateUserRequest extends FormRequest
     public function authorize()
     {
         $urlSlug = $this->route('user');
-        return $this->userRepo->can('update', ['App\\User', $urlSlug]);
+        return $this->authUserRepo->can('update', ['App\\User', $urlSlug]);
     }
 
     /**
@@ -45,7 +45,7 @@ class UpdateUserRequest extends FormRequest
                     # we want the slug to be different from all slugs in DB
                     # except from the $urlSlug
                     $newSlug = str_slug($username, '-');
-                    $users = $this->userRepo->checkIfExist($newSlug, $urlSlug ?? '');
+                    $users = $this->authUserRepo->checkIfExist($newSlug, $urlSlug ?? '');
 
                     if ($users > 0) {
                         return $fail("'{$value}' is alrady exists.");

@@ -6,14 +6,22 @@ use App\User;
 
 class Repository implements RepositoryInterface
 {
-    /**
-     * the authenticated user
-     */
-    private $user;
+    protected $user;
 
-    public function __construct()
+    /**
+     * get the user which has $field=$value from the propety $user or from DB
+     *
+     * @param  string $field
+     * @param  mixed $value
+     * @return App\Post
+     */
+    public function getBy(string $field, $value)
     {
-        $this->user = auth()->user();
+        if (empty($this->user) || $this->user->$field !== $value) {
+            $this->user = User::where($field, $value)->firstOrFail();
+        }
+
+        return $this->user;
     }
 
     /**
@@ -67,23 +75,18 @@ class Repository implements RepositoryInterface
     }
 
     /**
-     * return the current authenticated user
-     *
-     * @return \App\User
-     */
-    public function user()
-    {
-        return $this->user;
-    }
-
-    /**
-     * update the authenticated user
+     * update the user which has $field=$value using the $data arary
+     * only update [username, slug, description, avatar]
      *
      * @param  array  $data
+     * @param  string $field
+     * @param  string $value
      * @return void
      */
-    public function update(array $data)
+    public function update(array $data, string $field, $value)
     {
+        $this->getBy($field, $value);
+
         $this->user->slug = $data['slug'];
         $this->user->username = $data['username'];
         $this->user->description = $data['description'];

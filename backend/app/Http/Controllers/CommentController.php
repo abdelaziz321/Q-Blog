@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CommentRequest;
 use App\Http\Resources\CommentResource;
-use App\Repositories\User\RepositoryInterface as UserRepo;
 use App\Repositories\Comment\RepositoryInterface as CommentRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
 class CommentController extends Controller
 {
@@ -55,11 +55,11 @@ class CommentController extends Controller
      * @param  int  $id the id of the comment
      * @return \Illuminate\Http\Response
      */
-    public function destroy(int $id, UserRepo $userRepo)
+    public function destroy(int $id, AuthUserRepo $authUserRepo)
     {
         $comment = $this->commentRepo->get($id);
 
-        $userRepo->can('delete', $comment);
+        $authUserRepo->can('delete', $comment);
 
         $this->commentRepo->delete($id);
 
@@ -74,9 +74,9 @@ class CommentController extends Controller
      * @param  int $id the id of the comment
      * @return \Illuminate\Http\Response
      */
-    public function vote(int $id, UserRepo $userRepo)
+    public function vote(int $id, AuthUserRepo $authUserRepo)
     {
-        $userRepo->can('createOrVote', 'App\\Comment');
+        $authUserRepo->can('createOrVote', 'App\\Comment');
 
         $this->commentRepo->vote($id, 1);
 
@@ -91,9 +91,9 @@ class CommentController extends Controller
      * @param  int $id the id of the comment
      * @return \Illuminate\Http\Response
      */
-    public function unvote(int $id, UserRepo $userRepo)
+    public function unvote(int $id, AuthUserRepo $authUserRepo)
     {
-        $userRepo->can('createOrVote', 'App\\Comment');
+        $authUserRepo->can('createOrVote', 'App\\Comment');
 
         $this->commentRepo->vote($id, -1);
 

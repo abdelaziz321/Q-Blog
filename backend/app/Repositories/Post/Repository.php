@@ -3,7 +3,7 @@
 namespace App\Repositories\Post;
 
 use App\Post;
-use App\Repositories\User\RepositoryInterface as UserRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
 class Repository implements RepositoryInterface
 {
@@ -22,15 +22,16 @@ class Repository implements RepositoryInterface
     private $total;
 
     /**
-     * get the post which has slug=$slug from the propety $post or from DB
+     * get the post which has $field=$value from the propety $post or from DB
      *
-     * @param  string $slug
+     * @param  string $field
+     * @param  mixed $value
      * @return App\Post
      */
-    public function get(string $slug)
+    public function getBy(string $field, $value)
     {
-        if (empty($post) || $post->slug !== $slug) {
-            $this->post = Post::where('slug', $slug)->firstOrFail();
+        if (empty($this->post) || $this->post->$field !== $value) {
+            $this->post = Post::where($field, $value)->firstOrFail();
         }
 
         return $this->post;
@@ -46,8 +47,10 @@ class Repository implements RepositoryInterface
      * @param  integer $offset
      * @return Illuminate\Database\Eloquent\Collection
      */
-    public function getSortedPaginatedPosts($rules, $limit, $offset = 0)
+    public function getSortedPaginatedPosts(array $rules, int $limit, int $page)
     {
+        $offset = ($page - 1) * $limit;
+
         $query = Post::query();
 
         // views
@@ -144,11 +147,11 @@ class Repository implements RepositoryInterface
 
 
     /**
-     * Get the total number of items being paginated.
+     * Get the total number of posts being paginated.
      *
      * @return int
      */
-    public function getTotalPosts()
+    public function getTotalPaginated()
     {
         return $this->total;
     }
@@ -173,9 +176,9 @@ class Repository implements RepositoryInterface
      */
     public function recommend($postId)
     {
-        $user = resolve(UserRepo::class)->user();
+        $user = resolve(AuthUserRepo::class)->user();
 
-        $post = $this->get($postId);
+        $post = $this->getBy('id', $postId);
         $post->recommendations()->sync($user->id, false);
     }
 
@@ -187,9 +190,9 @@ class Repository implements RepositoryInterface
      */
     public function unrecommend($postId)
     {
-        $user = resolve(UserRepo::class)->user();
+        $user = resolve(AuthUserRepo::class)->user();
 
-        $post = $this->get($postId);
+        $post = $this->getBy('id', $postId);
         $post->recommendations()->detach($user->id);
     }
 }

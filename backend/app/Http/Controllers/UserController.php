@@ -7,25 +7,19 @@ use App\Http\Resources\UserResource;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserSearchResource;
 use App\Repositories\User\RepositoryInterface as UserRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
 class UserController extends Controller
 {
-    private $userRepo;
-
-    public function __construct(UserRepo $userRepo)
-    {
-        $this->userRepo = $userRepo;
-    }
-
     /**
      * search for authors have posts using their emails and username
      *
      * @return \Illuminate\Http\Response
      */
-    public function search(Request $request)
+    public function search(Request $request, UserRepo $userRepo)
     {
         $q = $request->query('q');
-        $users = $this->userRepo->search($q);
+        $users = $userRepo->search($q);
 
         return UserSearchResource::collection($users);
     }
@@ -41,10 +35,10 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateUserRequest $request, string $userSlug)
+    public function update(UpdateUserRequest $request, string $userSlug, AuthUserRepo $AuthUserRepo)
     {
         $data = $request->all();
-        $user = $this->userRepo->user();
+        $user = $AuthUserRepo->user();
 
         $data['slug'] = str_slug($data['username'] , '-');
 
@@ -65,7 +59,7 @@ class UserController extends Controller
             unset($data['avatar']);
         }
 
-        $this->userRepo->update($data);
+        $AuthUserRepo->update($data);
 
         return response()->json([
             'user' => new UserResource($user)

@@ -8,7 +8,7 @@ use App\Http\Requests\PostsFilterReuqest;
 use App\Http\Resources\PaginatedPostCollection;
 use \Illuminate\Auth\Access\AuthorizationException;
 use App\Repositories\Post\RepositoryInterface as PostRepo;
-use App\Repositories\User\RepositoryInterface as UserRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
 class PostController extends Controller
 {
@@ -28,12 +28,8 @@ class PostController extends Controller
     {
         $rules = $request->all();
 
-        $page = $request->query('page', 1);
-        $limit = 8;
-        $offset = ($page - 1) * $limit;
-
         $posts = $this->postRepo->getSortedPaginatedPosts(
-            $rules, $limit, $offset
+            $rules, 8, $request->query('page', 1)
         );
 
         return new PaginatedPostCollection($posts, $limit);
@@ -62,11 +58,11 @@ class PostController extends Controller
      * @param  string $slug
      * @return \Illuminate\Http\Response
      */
-    public function recommend(string $slug, UserRepo $userRepo)
+    public function recommend(string $slug, AuthUserRepo $authUserRepo)
     {
-        $post = $this->postRepo->get($slug);
+        $post = $this->postRepo->getBy('slug', $slug);
 
-        $userRepo->can('recommend', $post);
+        $authUserRepo->can('recommend', $post);
 
         $this->postRepo->recommend($post->id);
 
@@ -81,11 +77,11 @@ class PostController extends Controller
      * @param  string $slug
      * @return \Illuminate\Http\Response
      */
-    public function unrecommend(string $slug, UserRepo $userRepo)
+    public function unrecommend(string $slug, AuthUserRepo $authUserRepo)
     {
-        $post = $this->postRepo->get($slug);
+        $post = $this->postRepo->getBy('slug', $slug);
 
-        $userRepo->can('recommend', $post);
+        $authUserRepo->can('recommend', $post);
 
         $this->postRepo->unrecommend($post->id);
 

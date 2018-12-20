@@ -3,7 +3,7 @@
 namespace App\Repositories\Comment;
 
 use App\Comment;
-use App\Repositories\User\RepositoryInterface AS UserRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
 class Repository implements RepositoryInterface
 {
@@ -37,7 +37,7 @@ class Repository implements RepositoryInterface
      */
     public function create($data)
     {
-        $user = resolve(UserRepo::class)->user();
+        $user = resolve(AuthUserRepo::class)->user();
 
         $comment = new Comment;
         $comment->body = $data['body'];
@@ -82,7 +82,7 @@ class Repository implements RepositoryInterface
      */
     public function vote(int $id, int $value)
     {
-        $user = resolve(UserRepo::class)->user();
+        $user = resolve(AuthUserRepo::class)->user();
 
         $comment = $this->get($id);
         $comment->votes()->syncWithoutDetaching([
