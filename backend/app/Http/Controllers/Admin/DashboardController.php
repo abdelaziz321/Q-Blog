@@ -2,26 +2,36 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Repositories\User\RepositoryInterface as UserRepo;
+use App\Repositories\Post\RepositoryInterface as PostRepo;
+use App\Repositories\Comment\RepositoryInterface as CommentRepo;
 
 class DashboardController extends Controller
 {
+    private $userRepo;
+    private $postRepo;
+    private $commentRepo;
+
+    public function __construct(UserRepo $userRepo, PostRepo $postRepo, CommentRepo $commentRepo)
+    {
+        $this->userRepo = $userRepo;
+        $this->postRepo = $postRepo;
+        $this->commentRepo = $commentRepo;
+    }
+
     /**
-     * Display a listing of the resource.
+     * Display the count of posts|users|comments|views
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $views = \App\Post::selectRaw('sum(views) AS views')
-                          ->first()->views;
-
         return response()->json([
-            'posts'    => \App\Post::count(),
-            'comments' => \App\Comment::count(),
-            'users'    => \App\User::count(),
-            'views'    => $views
+            'posts'    => $this->postRepo->count(),
+            'users'    => $this->userRepo->count(),
+            'comments' => $this->commentRepo->count(),
+            'views'    => $this->postRepo->countViews()
         ]);
     }
 }
