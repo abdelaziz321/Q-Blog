@@ -3,24 +3,25 @@
 namespace App\Repositories\Category;
 
 use App\Category;
+use App\Repositories\BaseRepository;
 
-class Repository implements RepositoryInterface
+class Repository extends BaseRepository implements RepositoryInterface
 {
+    protected $_model = '\\App\\Category';
+
     /**
-     * get pageinated categoryies
+     * get first $limit categories have more posts
      *
-     * @param  integer $limit
-     * @param  integer $offset
+     * @param  int $limit
      * @return Illuminate\Database\Eloquent\Collection
      */
-    public function getPaginatedCategories($limit, $offset = 0)
+    public function getPopularCategories($limit)
     {
         return Category::withCount(['posts' => function ($query) {
                 $query->published();
             }])
             ->orderBy('posts_count', 'desc')
-            ->take($limit)
-            ->skip($offset)
+            ->limit($limit)
             ->get();
     }
 

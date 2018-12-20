@@ -3,31 +3,12 @@
 namespace App\Repositories\Comment;
 
 use App\Comment;
+use App\Repositories\BaseRepository;
 use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
-class Repository implements RepositoryInterface
+class Repository extends BaseRepository implements RepositoryInterface
 {
-    /**
-     * the current comment we are working in
-     *
-     * @var App\Comment
-     */
-    private $comment;
-
-    /**
-     * get the comment which has id=$id from the propety $comment or from DB
-     *
-     * @param  int $id the id of the comment
-     * @return App\Comment
-     */
-    public function get(int $id)
-    {
-        if (empty($comment) || $comment->id !== $id) {
-            $this->comment = Comment::where('id', $id)->firstOrFail();
-        }
-
-        return $this->comment;
-    }
+    protected $_model = '\\App\\Comment';
 
     /**
      * create a new comment
@@ -57,7 +38,7 @@ class Repository implements RepositoryInterface
      */
     public function update($id, $body)
     {
-        $comment = $this->get($id);
+        $comment = $this->getBy('id', $id);
         $comment->body = $body;
         $comment->save();
     }
@@ -84,7 +65,7 @@ class Repository implements RepositoryInterface
     {
         $user = resolve(AuthUserRepo::class)->user();
 
-        $comment = $this->get($id);
+        $comment = $this->getBy('id', $id);
         $comment->votes()->syncWithoutDetaching([
             $user->id => ['vote' => $value]
         ]);

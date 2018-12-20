@@ -2,16 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Tag;
-use App\Category;
-
 use Illuminate\Http\Request;
-
 use App\Http\Resources\TagResource;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\CategorySearchResource;
-
 use App\Repositories\Tag\RepositoryInterface as TagRepo;
 use App\Repositories\User\RepositoryInterface as UserRepo;
 use App\Repositories\Category\RepositoryInterface as CategoryRepo;
@@ -25,9 +20,9 @@ class HomeController extends Controller
      */
     public function sidebar(TagRepo $tagRepo, UserRepo $userRepo, CategoryRepo $categoryRepo)
     {
-        $tags = $tagRepo->getPaginatedTags(8);
-        $authors = $userRepo->getPaginatedUsers(5);
-        $categories = $categoryRepo->getPaginatedCategories(5);
+        $tags = $tagRepo->getPopularTags(8);
+        $authors = $userRepo->getPopularAuthors(5);
+        $categories = $categoryRepo->getPopularCategories(5);
 
         return response()->json([
             'tags'       => TagResource::collection($tags),

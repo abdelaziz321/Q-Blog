@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\PostResource;
 use App\Http\Resources\CommentResource;
 use App\Http\Requests\PostsFilterReuqest;
-use App\Http\Resources\PaginatedPostCollection;
-use \Illuminate\Auth\Access\AuthorizationException;
+use App\Http\Resources\PaginatedCollection;
 use App\Repositories\Post\RepositoryInterface as PostRepo;
 use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
@@ -26,13 +25,17 @@ class PostController extends Controller
      */
     public function index(PostsFilterReuqest $request)
     {
+        $limit = 8;
         $rules = $request->all();
 
         $posts = $this->postRepo->getSortedPaginatedPosts(
-            $rules, 8, $request->query('page', 1)
+            $rules, $limit, $request->query('page', 1)
         );
 
-        return new PaginatedPostCollection($posts, $limit);
+        $total = $this->postRepo->getTotalPaginated();
+
+        # PaginatedCollection(resource, collects, repo, per_page)
+        return new PaginatedCollection($posts, 'PostRow', $total , $limit);
     }
 
     /**

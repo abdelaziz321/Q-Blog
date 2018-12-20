@@ -57,7 +57,7 @@ class CommentController extends Controller
      */
     public function destroy(int $id, AuthUserRepo $authUserRepo)
     {
-        $comment = $this->commentRepo->get($id);
+        $comment = $this->commentRepo->getBy('id', $id);
 
         $authUserRepo->can('delete', $comment);
 

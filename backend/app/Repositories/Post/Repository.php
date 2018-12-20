@@ -3,39 +3,12 @@
 namespace App\Repositories\Post;
 
 use App\Post;
+use App\Repositories\BaseRepository;
 use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
-class Repository implements RepositoryInterface
+class Repository extends BaseRepository implements RepositoryInterface
 {
-    /**
-     * the current post we are working in
-     *
-     * @var App\Post
-     */
-    private $post;
-
-    /**
-     * The total number of items before slicing.
-     *
-     * @var int
-     */
-    private $total;
-
-    /**
-     * get the post which has $field=$value from the propety $post or from DB
-     *
-     * @param  string $field
-     * @param  mixed $value
-     * @return App\Post
-     */
-    public function getBy(string $field, $value)
-    {
-        if (empty($this->post) || $this->post->$field !== $value) {
-            $this->post = Post::where($field, $value)->firstOrFail();
-        }
-
-        return $this->post;
-    }
+    protected $_model = '\\App\\Post';
 
     /**
      * get pageinated posts sorted according to the given rules array
@@ -43,14 +16,12 @@ class Repository implements RepositoryInterface
      * ['views' => 'DESC', 'title' => 'vue']
      *
      * @param  array $rules
-     * @param  integer $limit
-     * @param  integer $offset
+     * @param  int   $limit
+     * @param  int   $page
      * @return Illuminate\Database\Eloquent\Collection
      */
     public function getSortedPaginatedPosts(array $rules, int $limit, int $page)
     {
-        $offset = ($page - 1) * $limit;
-
         $query = Post::query();
 
         // views
@@ -105,8 +76,9 @@ class Repository implements RepositoryInterface
             ->published()
             ->get();
 
-        $this->total = $posts->count();
+        $this->_total = $posts->count();
 
+        $offset = ($page - 1) * $limit;
         return $posts->slice($offset, $limit);
     }
 
@@ -145,15 +117,16 @@ class Repository implements RepositoryInterface
             ->firstOrFail();
     }
 
-
     /**
-     * Get the total number of posts being paginated.
+     * Get the total number of views for all posts
      *
      * @return int
      */
-    public function getTotalPaginated()
+    public function countViews()
     {
-        return $this->total;
+        return Post::selectRaw('sum(views) AS views')
+            ->first()
+            ->views;
     }
 
     /**

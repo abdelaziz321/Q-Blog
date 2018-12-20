@@ -3,35 +3,19 @@
 namespace App\Repositories\User;
 
 use App\User;
+use App\Repositories\BaseRepository;
 
-class Repository implements RepositoryInterface
+class Repository extends BaseRepository implements RepositoryInterface
 {
-    protected $user;
+    protected $_model = '\\App\\User';
 
     /**
-     * get the user which has $field=$value from the propety $user or from DB
-     *
-     * @param  string $field
-     * @param  mixed $value
-     * @return App\Post
-     */
-    public function getBy(string $field, $value)
-    {
-        if (empty($this->user) || $this->user->$field !== $value) {
-            $this->user = User::where($field, $value)->firstOrFail();
-        }
-
-        return $this->user;
-    }
-
-    /**
-     * get pageinated unbanned users
+     * get first $limit authors have more posts
      *
      * @param  integer $limit
-     * @param  integer $offset
      * @return Illuminate\Database\Eloquent\Collection
      */
-    public function getPaginatedUsers($limit, $offset = 0)
+    public function getPopularAuthors($limit)
     {
         return User::withCount(['posts' => function ($query) {
                 $query->published();
@@ -39,7 +23,6 @@ class Repository implements RepositoryInterface
             ->where('privilege', '>', 1)
             ->orderBy('posts_count', 'desc')
             ->take($limit)
-            ->skip($offset)
             ->get();
     }
 
@@ -57,7 +40,6 @@ class Repository implements RepositoryInterface
             ->limit(10)
             ->get();
     }
-
 
     /**
      * check if the given $slug exists in the users table.

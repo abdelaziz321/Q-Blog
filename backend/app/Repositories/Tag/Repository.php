@@ -3,25 +3,24 @@
 namespace App\Repositories\Tag;
 
 use App\Tag;
+use App\Repositories\BaseRepository;
 
-class Repository implements RepositoryInterface
+class Repository extends BaseRepository implements RepositoryInterface
 {
     /**
-     * get pageinated tags
+     * get first $limit tags have more posts
      *
-     * @param  integer $limit
-     * @param  integer $offset
+     * @param  int $limit
      * @return Illuminate\Database\Eloquent\Collection
      */
-    public function getPaginatedTags($limit, $offset = 0)
+    public function getPopularTags($limit)
     {
         return Tag::withCount(['posts' => function ($query) {
                 $query->published();
             }])
-           ->orderBy('posts_count', 'desc')
-           ->take($limit)
-           ->skip($offset)
-           ->get();
+            ->orderBy('posts_count', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     /**
