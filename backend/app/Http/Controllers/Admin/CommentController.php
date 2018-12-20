@@ -2,49 +2,56 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Comment;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CommentResource;
+use App\Http\Resources\PaginatedCollection;
+use App\Repositories\Comment\RepositoryInterface as CommentRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
 class CommentController extends Controller
 {
+    private $commentRepo;
+    private $authUserRepo;
+
+    public function __construct(CommentRepo $commentRepo, AuthUserRepo $authUserRepo)
+    {
+        $this->commentRepo = $commentRepo;
+        $this->authUserRepo = $authUserRepo;
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $this->authorize('view', Comment::class);
+        $this->authUserRepo->can('view', 'App\\Comment');
 
-        $comments = Comment::with(['user', 'post', 'replyTo.user'])
-                           ->leftJoin('votes AS total', function ($join) {
-                              $join->on('comments.id', '=', 'total.comment_id');
-                           })
-                           ->selectRaw('comments.*, sum(total.vote) AS votes')
-                           ->groupBy('comments.id')
-                           ->orderBy('id', 'desc')
-                           ->paginate(20);
+        $limit = 20;
+        $comments = $this->commentRepo->getPaginatedComments(
+            $limit, $request->query('page', 1)
+        );
 
-        $comments->getCollection()->transform(function ($comment) {
-            return new CommentResource($comment);
-        });
+        $total = $this->commentRepo->getTotalPaginated();
 
-        return $comments;
+        # PaginatedCollection(resource, collects, repo, per_page)
+        return new PaginatedCollection($comments, 'Comment', $total, $limit);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int  $id the id of the comment
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Comment $comment)
+    public function destroy(int $id)
     {
-        $this->authorize('delete', $comment);
+        $comment = $this->commentRepo->getBy('id', $id);
+        $this->authUserRepo->can('delete', $comment);
 
-        $comment->delete();
+        $this->commentRepo->delete($comment->id);
+
         return response()->json([
             'message'   => "this comment has been deleted successfully"
         ], 200);

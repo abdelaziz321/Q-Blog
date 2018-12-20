@@ -11,6 +11,30 @@ class Repository extends BaseRepository implements RepositoryInterface
     protected $_model = '\\App\\Comment';
 
     /**
+     * get pageinated comments with the total votes
+     *
+     * @param  integer $limit
+     * @param  integer $page
+     * @return Illuminate\Database\Eloquent\Collection
+     */
+    public function getPaginatedComments($limit, $page)
+    {
+        $comments = Comment::with(['user', 'post', 'replyTo.user'])
+            ->leftJoin('votes AS total', function ($join) {
+                $join->on('comments.id', '=', 'total.comment_id');
+            })
+            ->selectRaw('comments.*, sum(total.vote) AS votes')
+            ->groupBy('comments.id')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $this->_total = $comments->count();
+
+        $offset = ($page - 1) * $limit;
+        return $comments->slice($offset, $limit);
+    }
+
+    /**
      * create a new comment
      *
      * @param  array $data consists of {body, post_id}
@@ -46,8 +70,8 @@ class Repository extends BaseRepository implements RepositoryInterface
     /**
      * delete the given comment
      *
-     * @param  int $id
-     * @return [type]     [description]
+     * @param  int   $id
+     * @return void
      */
     public function delete(int $id)
     {
