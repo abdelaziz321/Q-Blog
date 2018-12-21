@@ -23,7 +23,7 @@ class CommentResource extends JsonResource
         $array = [
             'id'         => $this->id,
             'body'       => $this->body,
-            'votes'      => $this->votes_count ?? 0,
+            'votes'      => $this->votes ?? 0,
             'voted'      => $this->voted,
             'created_at' => $createdAt,
             'updated_at' => $updatedAt,

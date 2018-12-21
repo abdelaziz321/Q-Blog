@@ -35,6 +35,27 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
+     * get the comments of the given post.
+     *
+     * @param  string $slug
+     * @return Illuminate\Database\Eloquent\Collection
+     */
+    public function getPostComments(string $slug)
+    {
+        return Comment::with(['user'])
+            ->whereHas('post', function ($query) use ($slug) {
+                $query->where('slug', $slug);
+            })
+            ->leftJoin('votes AS total', function ($join) {
+                $join->on('comments.id', '=', 'total.comment_id');
+            })
+            ->selectRaw('comments.*, sum(total.vote) AS votes')
+            ->groupBy('comments.id')
+            ->orderBy('id', 'desc')
+            ->get();
+    }
+
+    /**
      * create a new comment
      *
      * @param  array $data consists of {body, post_id}
