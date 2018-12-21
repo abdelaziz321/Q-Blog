@@ -13,11 +13,11 @@ class PaginatedCollection extends ResourceCollection
 
     public function __construct($resource, string $collects, int $total, int $perPage)
     {
-        parent::__construct($resource);
-
         $this->total = $total;
         $this->perPage = $perPage;
         $this->collects = 'App\\Http\\Resources\\' . $collects . 'Resource';
+
+        parent::__construct($resource);
     }
 
     /**
