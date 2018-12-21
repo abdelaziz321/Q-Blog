@@ -67,17 +67,59 @@ class Repository extends BaseRepository implements RepositoryInterface
      */
     public function update(array $data, string $field, $value)
     {
-        $this->getBy($field, $value);
+        $user = $this->getBy($field, $value);
 
-        $this->user->slug = $data['slug'];
-        $this->user->username = $data['username'];
-        $this->user->description = $data['description'];
+        $user->slug = $data['slug'];
+        $user->username = $data['username'];
+        $user->description = $data['description'];
 
         if ( isset($data['avatar']) ) {
-            $this->user->avatar = $data['avatar'];
+            $user->avatar = $data['avatar'];
         }
 
-        $this->user->save();
+        $user->save();
+
+        return $user;
+    }
+
+    /**
+     * update the privilege of the given user to be a moderator
+     * if the given user is admin he will still as admin
+     *
+     * @param int $id the id of the user
+     */
+    public function setAsModerator(int $id)
+    {
+        User::where('id', $id)
+            ->where('privilege', '!=', 4)
+            ->update(['privilege' => 3]);
+    }
+
+    /**
+     * if there is no category related to the given moderator so
+     * he is now a regular user.
+     * if the given user is admin he will still as admin
+     *
+     * @param int $id
+     * @return void
+     */
+    public function setAsRegularUserIfRequired(int $id)
+    {
+        $user = $this->getBy('id', $id);
+
+        # we will take no action if he is an admin
+        if ($user->isAdmin()) {
+            return;
+        }
+
+        # we will take no action if he still moderate some categories
+        if ($user->category()->exists()) {
+            return;
+        }
+
+        # sorry man, you are fired - :'( -
+        $user->privilege = 1;
+        $user->save();
     }
 
     /**
@@ -88,6 +130,6 @@ class Repository extends BaseRepository implements RepositoryInterface
      */
     public function can(...$args)
     {
-        return $this->user->can(...$args);
+        return $this->_record->can(...$args);
     }
 }

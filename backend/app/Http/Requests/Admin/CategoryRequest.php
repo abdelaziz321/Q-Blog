@@ -3,9 +3,19 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
+use App\Repositories\Category\RepositoryInterface as CategoryRepo;
 
 class CategoryRequest extends FormRequest
 {
+    private $authUserRepo;
+
+    public function __construct(AuthUserRepo $authUserRepo, CategoryRepo $categoryRepo)
+    {
+        $this->authUserRepo = $authUserRepo;
+        $this->categoryRepo = $categoryRepo;
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -14,10 +24,13 @@ class CategoryRequest extends FormRequest
     public function authorize()
     {
         if ($this->method() == 'PUT') {
-            $category = $this->category;
-            return auth()->user()->can('update', $category);
-        } else {
-            return auth()->user()->can('createOrDelete', \App\Category::class);
+            $categorySlug = $this->route('category');
+            $category = $this->categoryRepo->getWithModerator($categorySlug);
+
+            return $this->authUserRepo->can('update', $category);
+        }
+        else {
+            return $this->authUserRepo->can('createOrDelete', 'App\\Category');
         }
     }
 
@@ -28,25 +41,28 @@ class CategoryRequest extends FormRequest
      */
     public function rules()
     {
-        $category = $this->category;
-        $request = $this;
+        $method = $this->method();
+        // the requested title slug
+        $newSlug = str_slug($this->title, '-');
+        // the slug given in the url
+        $urlSlug = $this->route('category');
 
         return [
             'title' => [
                 'required',
                 'min:3',
-                function($attribute, $value, $fail) use ($request, $category) {
-                    $slug = str_slug($request->title, '-');
-                    if ($request->method() == 'PUT') {
-                        $categories = \App\Category::where('slug', $slug)
-                                                   ->where('id', '!=', $category->id)
-                                                   ->get();
-                    } else {
-                        $categories = \App\Category::where('slug', $slug)
-                                                   ->get();
+                function($attribute, $value, $fail) use ($method, $newSlug, $urlSlug) {
+                    if ($method == 'PUT') {
+                        # we want the new slug to be different from all slugs in DB
+                        # except from the slug given in the url
+                        $categories = $this->categoryRepo->checkIfExist($newSlug, $urlSlug);
+                    }
+                    else {
+                        # we want the new slug to be different from all slugs in DB
+                        $categories = $this->categoryRepo->checkIfExist($newSlug);
                     }
 
-                    if (!$categories->isEmpty()) {
+                    if ($categories > 0) {
                         return $fail("'{$value}' is alrady exists.");
                     }
                 },

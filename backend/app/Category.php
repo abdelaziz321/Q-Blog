@@ -18,9 +18,4 @@ class Category extends Model
     {
         return $this->belongsTo('App\User', 'moderator');
     }
-
-    public function getRouteKeyName()
-    {
-        return 'slug';
-    }
 }

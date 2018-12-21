@@ -2,72 +2,80 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Post;
-use App\User;
-use App\Category;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\PostRowResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Requests\Admin\CategoryRequest;
-use App\Http\Resources\CategorySearchResource;
+use App\Http\Resources\PaginatedCollection;
+use App\Repositories\Post\RepositoryInterface as PostRepo;
+use App\Repositories\User\RepositoryInterface as UserRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
+use App\Repositories\Category\RepositoryInterface as CategoryRepo;
 
 class CategoryController extends Controller
 {
+    private $categoryRepo;
+
+    public function __construct(CategoryRepo $categoryRepo)
+    {
+        $this->categoryRepo = $categoryRepo;
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request, AuthUserRepo $authUserRepo)
     {
-        $this->authorize('viewCategories', Category::class);
+        $authUserRepo->can('viewCategories', 'App\\Category');
 
-        $categories = Category::with('moderator')
-                              ->withCount('posts')
-                              ->paginate(5);
+        $limit = 10;
+        $categories = $this->categoryRepo->getPaginatedCategoriesWithModeratos(
+            $limit, $request->query('page', 1)
+        );
 
-        $categories->getCollection()->transform(function ($category) {
-            return new CategoryResource($category);
-        });
+        $total = $this->categoryRepo->getTotalPaginated();
 
-        return $categories;
-    }
-
-    public function getCategoryPosts($slug)
-    {
-        $this->authorize('viewCategories', Category::class);
-
-        $category = Category::where('slug', $slug)->firstOrFail();
-
-        $posts = Post::with('author')
-                     ->withCount(['comments', 'recommendations'])
-                     ->where('category_id', $category->id)
-                     ->orderBy('id', 'desc')
-                     ->paginate(10);
-
-        $posts->getCollection()->transform(function ($post) {
-            return new PostRowResource($post);
-        });
-
-        return $posts;
+        # PaginatedCollection(resource, collects, total, per_page)
+        return new PaginatedCollection($categories, 'Category', $total , $limit);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * get paginated posts of the category $slug
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string $slug the slug of the category
+     * @return \Illuminate\Http\Response
+     */
+    public function getCategoryPosts(Request $request, string $slug, PostRepo $postRepo, AuthUserRepo $authUserRepo)
+    {
+        $authUserRepo->can('viewCategories', '\\App\\Category');
+
+        $limit = 8;
+        $posts = $postRepo->getSortedPaginatedPosts(
+            ['category' => $slug], $limit, $request->query('page', 1)
+        );
+
+        $total = $postRepo->getTotalPaginated();
+
+        # PaginatedCollection(resource, collects, total, per_page)
+        return new PaginatedCollection($posts, 'PostRow', $total , $limit);
+    }
+
+    /**
+     * create a new category.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(CategoryRequest $request)
+    public function store(CategoryRequest $request, UserRepo $userRepo)
     {
         $data = $request->all();
         $data['slug'] = str_slug($request->title , '-');
 
-        $category = Category::create($data);
-        $category->load('moderator');
-
-        User::where('id', $category->moderator)->update(['privilege' => 3]);
+        $category = $this->categoryRepo->create($data);
+        $userRepo->setAsModerator($category->moderator);
 
         return response()->json([
             'category'  => new CategoryResource($category)
@@ -75,19 +83,16 @@ class CategoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * get the category $slug with the slug.
      *
-     * @param  int  $id
+     * @param  string $slug
      * @return \Illuminate\Http\Response
      */
-    public function show($slug)
+    public function show(string $slug, AuthUserRepo $authUserRepo)
     {
-        $this->authorize('viewCategories', Category::class);
+        $authUserRepo->can('viewCategories', 'App\\Category');
 
-        $category = Category::with(['moderator'])
-                            ->withCount('posts')
-                            ->where('slug', $slug)
-                            ->firstOrFail();
+        $category = $this->categoryRepo->getWithModerator($slug);
 
         return response()->json([
           'category' => new CategoryResource($category)
@@ -98,27 +103,16 @@ class CategoryController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  string $slug
      * @return \Illuminate\Http\Response
      */
-    public function update(CategoryRequest $request, Category $category)
+    public function update(CategoryRequest $request, string $slug, UserRepo $userRepo)
     {
         $data = $request->all();
-
-        // if there is no category related to this moderator so he is now a regular user.
-        $moderator = User::where('id', $category->moderator)->firstOrFail();
         $data['slug'] = str_slug($request->title , '-');
-        $category->update($data);
-        
-        if (!$moderator->category()->exists()) {
-            # you are fired
-            $moderator->privilege = 1;
-            $moderator->save();
-        }
 
-        $category->load('moderator');
-
-        User::where('id', $category->moderator)->update(['privilege' => 3]);
+        $category = $this->categoryRepo->update($slug, $data);
+        $userRepo->setAsModerator($category->moderator);
 
         return response()->json([
             'category'  => new CategoryResource($category)
@@ -128,22 +122,14 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  Category $category
+     * @param  string $category
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Category $category)
+    public function destroy(string $category, AuthUserRepo $authUserRepo)
     {
-        $this->authorize('createOrDelete', Category::class);
+        $authUserRepo->can('createOrDelete', 'App\\Category');
 
-        $moderator = User::where('id', $category->moderator)->firstOrFail();
-
-        $category->delete();
-        // if there is no category related to this moderator so he is now a regular user.
-        if (!$moderator->category()->exists()) {
-            # you are fired
-            $moderator->privilege = 1;
-            $moderator->save();
-        }
+        $category = $this->categoryRepo->delete($slug);
 
         return response()->json([
             'message'   => "'{$category->title}' category has been deleted successfully"
