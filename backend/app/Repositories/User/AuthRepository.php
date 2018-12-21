@@ -8,7 +8,7 @@ class AuthRepository extends Repository implements AuthRepositoryInterface
 {
     public function __construct()
     {
-        $this->user = auth()->user();
+        $this->_record = auth()->user();
     }
 
     /**
@@ -18,7 +18,7 @@ class AuthRepository extends Repository implements AuthRepositoryInterface
      */
     public function user()
     {
-        return $this->user;
+        return $this->_record;
     }
 
     /**
@@ -29,6 +29,6 @@ class AuthRepository extends Repository implements AuthRepositoryInterface
      */
     public function update(array $data, string $field = null, $value = null)
     {
-        parent::update($data, 'id', $this->user->id);
+        return parent::update($data, 'id', $this->_record->id);
     }
 }

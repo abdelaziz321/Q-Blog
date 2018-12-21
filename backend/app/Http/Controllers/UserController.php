@@ -59,7 +59,7 @@ class UserController extends Controller
             unset($data['avatar']);
         }
 
-        $AuthUserRepo->update($data);
+        $user = $AuthUserRepo->update($data);
 
         return response()->json([
             'user' => new UserResource($user)
