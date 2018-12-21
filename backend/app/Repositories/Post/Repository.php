@@ -12,6 +12,7 @@ class Repository extends BaseRepository implements RepositoryInterface
 
     /**
      * get pageinated posts sorted according to the given rules array
+     * this method return only the published posts
      * the array will be something like:
      * ['views' => 'DESC', 'title' => 'vue']
      *
@@ -74,6 +75,30 @@ class Repository extends BaseRepository implements RepositoryInterface
         $posts = $query->with(['category', 'author'])
             ->withCount(['comments', 'recommendations'])
             ->published()
+            ->get();
+
+        $this->_total = $posts->count();
+
+        $offset = ($page - 1) * $limit;
+        return $posts->slice($offset, $limit);
+    }
+
+    /**
+     * get pageinated posts includeing the unpublished posts from the given category.
+     *
+     * @param  string   $slug   slug of a category
+     * @param  int      $limit
+     * @param  int      $page
+     * @return Illuminate\Database\Eloquent\Collection
+     */
+    public function getPaginatedCategoryPosts(string $slug, int $limit, int $page = 1)
+    {
+        $posts = Post::with(['category', 'author'])
+            ->whereHas('category', function ($query) use ($slug) {
+                $query->where('slug', $slug);
+            })
+            ->withCount(['comments', 'recommendations'])
+            ->orderBy('id', 'desc')
             ->get();
 
         $this->_total = $posts->count();

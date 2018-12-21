@@ -53,8 +53,8 @@ class CategoryController extends Controller
         $authUserRepo->can('viewCategories', '\\App\\Category');
 
         $limit = 8;
-        $posts = $postRepo->getSortedPaginatedPosts(
-            ['category' => $slug], $limit, $request->query('page', 1)
+        $posts = $postRepo->getPaginatedCategoryPosts(
+            $slug, $limit, $request->query('page', 1)
         );
 
         $total = $postRepo->getTotalPaginated();
