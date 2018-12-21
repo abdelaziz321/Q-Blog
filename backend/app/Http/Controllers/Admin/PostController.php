@@ -11,60 +11,75 @@ use App\Http\Resources\PostResource;
 use App\Http\Resources\PostRowResource;
 use App\Http\Resources\CommentResource;
 use App\Http\Requests\Admin\PostRequest;
+use App\Http\Resources\PaginatedCollection;
+use App\Repositories\Post\RepositoryInterface as PostRepo;
+use App\Repositories\Comment\RepositoryInterface as CommentRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
 class PostController extends Controller
 {
+    private $postRepo;
+
+    public function __construct(PostRepo $postRepo)
+    {
+        $this->postRepo = $postRepo;
+    }
+
     /**
-     * Display a listing of the resource.
+     * get pageinated posts - the published and unPublished posts.
      *
+     * @param  Request $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request, AuthUserRepo $authUserRepo)
     {
-        $this->authorize('viewPosts', Post::class);
+        $authUserRepo->can('viewPosts', 'App\\Post');
 
-        $posts = Post::with(['category', 'author'])
-                     ->withCount(['comments', 'recommendations'])
-                     ->orderBy('id', 'desc')
-                     ->paginate(15);
+        $limit = 15;
+        $posts = $this->postRepo->getPaginatedPosts(
+            $limit, $request->query('page', 1)
+        );
 
-        $posts->getCollection()->transform(function ($post) {
-            return new PostRowResource($post);
-        });
+        $total = $this->postRepo->getTotalPaginated();
 
-        return $posts;
+        # PaginatedCollection(resource, collects, total, per_page)
+        return new PaginatedCollection($posts, 'PostRow', $total , $limit);
     }
 
-    public function unPublishedPosts()
+    /**
+     * get pageinated posts - the unPublished posts.
+     *
+     * @param  Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function unPublishedPosts(Request $request, AuthUserRepo $authUserRepo)
     {
-        $this->authorize('viewPosts', Post::class);
+        $authUserRepo->can('viewPosts', 'App\\Post');
 
-        $posts = Post::with(['category', 'author'])
-                     ->withCount(['comments', 'recommendations'])
-                     ->orderBy('id', 'desc')
-                     ->unPublished()
-                     ->paginate(15);
+        $limit = 15;
+        $posts = $this->postRepo->getPaginatedPosts(
+            $limit, $request->query('page', 1), 0
+        );
 
-        $posts->getCollection()->transform(function ($post) {
-            return new PostRowResource($post);
-        });
+        $total = $this->postRepo->getTotalPaginated();
 
-        return $posts;
+        # PaginatedCollection(resource, collects, total, per_page)
+        return new PaginatedCollection($posts, 'PostRow', $total , $limit);
     }
 
-    public function postComments($slug)
+    /**
+     * get the comments of the given post.
+     *
+     * @param  string $slug the slug of the post
+     * @return \Illuminate\Http\Response
+     */
+    public function postComments(string $slug, AuthUserRepo $authUserRepo, CommentRepo $commentRepo)
     {
-        $this->authorize('viewPosts', Post::class);
+        $authUserRepo->can('viewPosts', 'App\\Post');
 
-        $post = Post::with(['comments.user', 'comments.votes'])
-                    ->where('slug', $slug)
-                    ->firstOrFail();
+        $comments = $commentRepo->getPostComments($slug);
 
-        $comments = $post->comments->transform(function ($comment) {
-            return new CommentResource($comment);
-        });
-
-        return $comments;
+        return CommentResource::Collection($comments);
     }
 
     /**
@@ -73,12 +88,12 @@ class PostController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(PostRequest $request)
+    public function store(PostRequest $request, TagRepo $tagRepo)
     {
         $data = $request->all();
-
         $data['slug'] = str_slug($request->title , '-');
-        $data['author_id'] = auth()->user()->id;
+
+
 
         // handling the uploaded photo
         if ($request->hasFile('caption') && $request->file('caption')->isValid()) {
@@ -88,8 +103,11 @@ class PostController extends Controller
             Image::make($caption)->fit(800, 500)->save(public_path('storage/posts/') . $captionName);
         }
 
+
+        $tagsIds = $tagRepo->insertTagsIfNotExists();
+
         $post = Post::create($data);
-        $post->addTags($data['tags']);
+
         $post->load(['category', 'author', 'tags']);
 
         return response()->json([

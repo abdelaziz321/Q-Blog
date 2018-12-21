@@ -102,3 +102,8 @@ Route::prefix('auth')->group(function () {
     Route::get('user', 'AuthController@user');
     Route::get('refresh', 'AuthController@refresh');
 });
+
+DB::listen(function ($query) {
+    $b = implode($query->bindings, ' | ');
+    error_log("Q take time: {{$query->time}} with params: {{$b}}\n==> {{$query->sql}}\n");
+});

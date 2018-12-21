@@ -21,7 +21,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      * @param  int   $page
      * @return Illuminate\Database\Eloquent\Collection
      */
-    public function getSortedPaginatedPosts(array $rules, int $limit, int $page)
+    public function getSortedPaginatedPosts(array $rules, int $limit, int $page = 1)
     {
         $query = Post::query();
 
@@ -75,6 +75,39 @@ class Repository extends BaseRepository implements RepositoryInterface
         $posts = $query->with(['category', 'author'])
             ->withCount(['comments', 'recommendations'])
             ->published()
+            ->get();
+
+        $this->_total = $posts->count();
+
+        $offset = ($page - 1) * $limit;
+        return $posts->slice($offset, $limit);
+    }
+
+    /**
+     * get pageinated posts - get the published or unPublished posts or both.
+     *
+     * @param  int  $limit
+     * @param  int  $page
+     * @param  int  $published  | -1 | published + unPublished |
+     *                          |  0 | unPublished             |
+     *                          |  1 | published               |
+     *
+     * @return Illuminate\Database\Eloquent\Collection
+     */
+    public function getPaginatedPosts(int $limit, int $page = 1, int $published = -1)
+    {
+        $query = Post::query();
+
+        if ($published == 1) {
+            $query->published();
+        }
+        elseif ($published == 0) {
+            $query->unPublished();
+        }
+
+        $posts = $query->with(['category', 'author'])
+            ->withCount(['comments', 'recommendations'])
+            ->orderBy('id', 'desc')
             ->get();
 
         $this->_total = $posts->count();
@@ -140,6 +173,11 @@ class Repository extends BaseRepository implements RepositoryInterface
             ->where('slug', $slug)
             ->published()
             ->firstOrFail();
+    }
+
+    public function create(array $data)
+    {
+        $data['author_id'] = auth()->user()->id;
     }
 
     /**
