@@ -38,7 +38,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      * create a new comment
      *
      * @param  array $data consists of {body, post_id}
-     * @return Aoo\Comment
+     * @return \App\Comment
      */
     public function create($data)
     {
