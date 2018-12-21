@@ -52,7 +52,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      * @param  int $offset
      * @return Illuminate\Database\Eloquent\Collection
      */
-    public function getPaginatedCategoriesWithModeratos($limit, $page = 1)
+    public function getPaginatedCategoriesWithModeratos(int $limit, int $page = 1)
     {
         $categories = Category::with('moderator')
             ->withCount('posts')
