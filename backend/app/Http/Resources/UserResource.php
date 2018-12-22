@@ -22,17 +22,17 @@ class UserResource extends JsonResource
 
         $array = [
             'id'                    => $this->id,
-            'avatar'                => $this->avatar,
+            'avatar'                => $this->when($this->avatar,  $this->avatar),
             'slug'                  => $this->slug,
             'username'              => $this->username,
             'email'                 => $this->email,
-            'about'                 => $this->description,
+            'about'                 => $this->when($this->description,  $this->description),
             'joined_at'             => $joinedAt,
             'role'                  => $this->role(),
-            'total_posts'           => $this->posts_count,
-            'total_comments'        => $this->comments_count,
-            'total_votes'           => $this->votes_count,
-            'total_recommendations' => $this->recommendations_count
+            'total_posts'           => $this->when($this->posts_count, $this->posts_count),
+            'total_comments'        => $this->when($this->comments_count, $this->comments_count),
+            'total_votes'           => $this->when($this->votes_count, $this->votes_count),
+            'total_recommendations' => $this->when($this->recommendations_count, $this->recommendations_count)
         ];
 
         $this->getModeratorCategory($array);

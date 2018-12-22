@@ -17,14 +17,14 @@ Route::resource('posts', 'PostController', [
     'only' => ['index', 'show']
 ]);
 
-Route::middleware('jwt.auth')->group(function () {
+Route::middleware('api')->group(function () {
     Route::post('posts/recommend/{post}', 'PostController@recommend');
     Route::post('posts/unrecommend/{post}', 'PostController@unrecommend');
 });
 
 
 // ==== comments routes
-Route::middleware('jwt.auth')->group(function () {
+Route::middleware('api')->group(function () {
     Route::resource('comments', 'CommentController', [
         'only' => ['store', 'update', 'destroy']
     ]);
@@ -35,7 +35,7 @@ Route::middleware('jwt.auth')->group(function () {
 
 
 // ==== users routes
-Route::middleware('jwt.auth')->group(function () {
+Route::middleware('api')->group(function () {
     Route::resource('users', 'UserController', [
         'only' => ['show', 'update']
     ]);
@@ -43,7 +43,7 @@ Route::middleware('jwt.auth')->group(function () {
 
 
 // ======================= admin panel routes =======================
-Route::namespace('Admin')->prefix('admin')->middleware('jwt.auth')->group(function () {
+Route::namespace('Admin')->prefix('admin')->middleware('api')->group(function () {
     // ==== categories routes
     Route::get('categories/{category}/posts', 'CategoryController@getCategoryPosts');
     Route::resource('categories', 'CategoryController', [
@@ -94,11 +94,11 @@ Route::namespace('Admin')->prefix('admin')->middleware('jwt.auth')->group(functi
 
 
 // ======================= authentication routes =======================
-Route::prefix('auth')->group(function () {
+Route::prefix('auth')->middleware('api')->group(function () {
     Route::post('register', 'AuthController@register');
     Route::post('login', 'AuthController@login');
     Route::post('logout', 'AuthController@logout');
 
+    Route::post('refresh', 'AuthController@refresh');
     Route::get('user', 'AuthController@user');
-    Route::get('refresh', 'AuthController@refresh');
 });

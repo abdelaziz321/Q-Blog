@@ -25,7 +25,7 @@ class CreateUsersTable extends Migration
             # 0 banned user    # 1 regular user     # 2 author
             # 3 moderator      # 4 admin
             $table->tinyInteger('privilege')->default(1);
-            $table->timestamp('joinded_at')->useCurrent();
+            $table->timestamp('joined_at')->useCurrent();
             $table->rememberToken();
         });
     }
