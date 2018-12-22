@@ -10,6 +10,7 @@ class User extends Authenticatable implements JWTSubject
 {
     use Notifiable;
 
+    //================= attributes =================
     public $timestamps = false;
 
     /**
@@ -30,6 +31,7 @@ class User extends Authenticatable implements JWTSubject
         'password', 'remember_token',
     ];
 
+    //================= relationships =================
     public function category()
     {
         return $this->hasOne('App\Category', 'moderator');
@@ -57,6 +59,7 @@ class User extends Authenticatable implements JWTSubject
         );
     }
 
+    //================= methods =================
     # 0 banned user    # 1 regular user     # 2 author
     # 3 moderator      # 4 admin
     public function role()
@@ -76,26 +79,6 @@ class User extends Authenticatable implements JWTSubject
                 # AFAIK: this couldn't be reached.
                 return 'unknown';
         }
-    }
-
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
-    public function getJWTCustomClaims()
-    {
-        return [];
     }
 
     public function isAdmin()
@@ -120,5 +103,31 @@ class User extends Authenticatable implements JWTSubject
         }
 
         return true;
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
+    //================= JWT Auth =================
+    /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     *
+     * @return mixed
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
+    public function getJWTCustomClaims()
+    {
+        return [];
     }
 }
