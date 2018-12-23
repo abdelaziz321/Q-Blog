@@ -27,7 +27,7 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
-     * @param  string $q the string by which we will search
+     * @param  string $_GET['q'] the string by which we will search
      * @return Illuminate\Database\Eloquent\Collection
      */
     public function search(string $q)
@@ -39,6 +39,26 @@ class Repository extends BaseRepository implements RepositoryInterface
             })
             ->limit(10)
             ->get();
+    }
+
+    /**
+     * create a new user
+     *
+     * @param  array  $userData ['username', 'email', 'password', 'description']
+     * @return \App\User
+     */
+    public function create(array $userData)
+    {
+        $this->_record = User::create([
+            'slug'        => str_slug($userData['username']),
+            'username'    => $userData['username'],
+            'email'       => $userData['email'],
+            'password'    => \Hash::make($userData['password']),
+            'privilege'   => 1,
+            'description' => $userData['description']
+        ]);
+
+        return $this->_record;
     }
 
     /**

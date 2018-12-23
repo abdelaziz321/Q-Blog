@@ -84,13 +84,16 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
-     * get pageinated posts - get the published or unPublished posts or both.
+     * get pageinated posts - get the published or unPublished posts or both dependeing
+     * on the $published varibale.
+     * | val |      === result ===      |
+     * | -1  | published && unPublished |
+     * |  0  |       unPublished        |
+     * |  1  |        published         |
      *
      * @param  int  $limit
      * @param  int  $page
-     * @param  int  $published  | -1 | published + unPublished |
-     *                          |  0 | unPublished             |
-     *                          |  1 | published               |
+     * @param  int  $published
      *
      * @return Illuminate\Database\Eloquent\Collection
      */
@@ -141,37 +144,33 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
-     * get the post $slug with its comments.
-     * - the post will have attribute `recommended` to determine if the authenticated user
-     * recommended this post or not.
-     * - each comment will have attribute `voted` to determine if the authenticated user
-     * voted this comment up or down or didn't vote.
+     * Get the post $slug with its relations 'category', 'author', 'tags'...
+     * - the post will have attribute `recommended` to determine if the
+     * authenticated user recommended this post or not.
+     * - if the $published variable = true, the method will return the post
+     * only if it was published
      *
-     * @param  string $slug
+     * @param  string  $slug
+     * @param  boolean $published 1 => get only if published
+     * @return \App\Post
      */
-    public function getPostWithItsComments(string $slug)
+    public function getPost(string $slug, bool $published = false)
     {
-        return Post::with(['category', 'author', 'tags', 'comments' => function ($query) {
-                $query->leftJoin('votes AS total', function ($join) {
-                    $join->on('comments.id', '=', 'total.comment_id');
-                })
-                ->leftJoin('votes AS voted', function ($join) {
-                    $join->on('comments.id', '=', 'voted.comment_id')
-                        ->where('voted.user_id', auth()->user()->id ?? 0);
-                })
-                ->selectRaw('comments.*, sum(DISTINCT voted.vote) AS voted, sum(total.vote) AS votes')
-                ->groupBy('comments.id');
-            }, 'comments.user'])
+        $query = Post::query();
 
+        if ($published) {
+            $query->published();
+        }
+
+        return $query->with(['category', 'author', 'tags'])
             ->withCount(['comments', 'recommendations'])
+            ->where('slug', $slug)
             ->leftJoin('recommendations AS recommended', function ($join) {
                 $join->on('posts.id', '=', 'recommended.post_id')
                      ->where('recommended.user_id', auth()->user()->id ?? 0);
             })
             ->selectRaw('count(DISTINCT recommended.user_id) AS recommended')
             ->groupBy('posts.id')
-            ->where('slug', $slug)
-            ->published()
             ->firstOrFail();
     }
 
@@ -205,30 +204,45 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
-     * the authenticated user recommend the given post
+     * the authenticated user recommend|unrecommend the given post
+     * depending on the value of the boolean variable $recommend
+     * true  => recommend the post
+     * false => unrecommend the post
      *
-     * @param  int $postId
+     * @param int  $postId
+     * @param bool $recommend
      * @return void
      */
-    public function recommend($postId)
+    public function recommendation(int $postId, bool $recommend)
     {
         $user = resolve(AuthUserRepo::class)->user();
-
         $post = $this->getBy('id', $postId);
-        $post->recommendations()->sync($user->id, false);
+
+        if ($recommend) {
+            $post->recommendations()->sync($user->id, false);
+        }
+        else {
+            $post->recommendations()->detach($user->id);
+        }
     }
 
     /**
-     * the authenticated user unrecommend the given post
+     * publish|unpublish the given post depending on
+     * the given boolean variable $publish
+     * true  => publish the post
+     * false => unpublish the post
      *
-     * @param  int $postId
+     * @param int     $id       the id of the post
+     * @param boolean $publish
      * @return void
      */
-    public function unrecommend($postId)
+    public function publishing(int $id, bool $publish)
     {
-        $user = resolve(AuthUserRepo::class)->user();
+        $post = $this->getBy('id', $id);
 
-        $post = $this->getBy('id', $postId);
-        $post->recommendations()->detach($user->id);
+        $post->published = $publish;
+        $post->published_at = ($publish) ? now()->toDateTimeString() : null;
+
+        $post->save();
     }
 }

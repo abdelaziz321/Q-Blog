@@ -25,7 +25,9 @@ class CommentRequest extends FormRequest
     public function authorize()
     {
         if ($this->method() == 'PUT') {
-            $comment = $this->commentRepo->get($this->route('comment'));
+            $commentId = $this->route('comment');
+            $comment = $this->commentRepo->getCommentWithVotes($commentId);
+
             return $this->authUserRepo->can('update', $comment);
         }
         else {

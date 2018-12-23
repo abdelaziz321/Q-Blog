@@ -13,8 +13,8 @@ class Repository extends BaseRepository implements RepositoryInterface
     /**
      * get pageinated comments with the total votes
      *
-     * @param  integer $limit
-     * @param  integer $page
+     * @param  int $limit
+     * @param  int $page
      * @return Illuminate\Database\Eloquent\Collection
      */
     public function getPaginatedComments($limit, $page)
@@ -36,15 +36,25 @@ class Repository extends BaseRepository implements RepositoryInterface
 
     /**
      * get the comments of the given post.
+     * - if the $published variable = true, the method will return the comments
+     * only if their post was published
      *
      * @param  string $slug
+     * @param  int    $limit
+     * @param  int    $page
+     * @param  boolean $published 1 => get only if published
      * @return Illuminate\Database\Eloquent\Collection
      */
-    public function getPostComments(string $slug)
+    public function getPostComments(string $slug, int $limit, int $page, bool $published = false)
     {
+        $offset = ($page - 1) * $limit;
+
         return Comment::with(['user'])
-            ->whereHas('post', function ($query) use ($slug) {
+            ->whereHas('post', function ($query) use ($slug, $published) {
                 $query->where('slug', $slug);
+                if ($published) {
+                    $query->published();
+                }
             })
             ->leftJoin('votes AS total', function ($join) {
                 $join->on('comments.id', '=', 'total.comment_id');
@@ -52,7 +62,30 @@ class Repository extends BaseRepository implements RepositoryInterface
             ->selectRaw('comments.*, sum(total.vote) AS votes')
             ->groupBy('comments.id')
             ->orderBy('id', 'desc')
+            ->skip($offset)
+            ->take($limit)
             ->get();
+    }
+
+    /**
+     * get the comment of the given id with count the votes
+     *
+     * @param  int    $id the id of the comment
+     * @return \App\Comment
+     */
+    public function getCommentWithVotes(int $id)
+    {
+        if (empty($this->_record)) {
+            $this->_record = Comment::where('id', $id)
+                ->leftJoin('votes AS total', function ($join) {
+                    $join->on('comments.id', '=', 'total.comment_id');
+                })
+                ->selectRaw('comments.*, sum(total.vote) AS votes')
+                ->groupBy('comments.id')
+                ->firstOrFail();
+        }
+
+        return $this->_record;
     }
 
     /**
@@ -71,6 +104,8 @@ class Repository extends BaseRepository implements RepositoryInterface
         $comment->user_id = $user->id;
         $comment->save();
 
+        $comment->votes = 0;
+
         return $comment;
     }
 
@@ -83,9 +118,11 @@ class Repository extends BaseRepository implements RepositoryInterface
      */
     public function update($id, $body)
     {
-        $comment = $this->getBy('id', $id);
+        $comment = $this->getCommentWithVotes($id);
         $comment->body = $body;
         $comment->save();
+
+        return $comment;
     }
 
     /**
@@ -100,19 +137,24 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
-     * the authenticated user vote up|down the given comment id
+     * the authenticated user unvote && vote up|down the given comment id
      *
      * @param  int $id the id of the comment
-     * @param  int $value 1 => up & -1 => down
+     * @param  int $value 1 => up & -1 => down & 0 => unvote
      * @return void
      */
     public function vote(int $id, int $value)
     {
         $user = resolve(AuthUserRepo::class)->user();
-
         $comment = $this->getBy('id', $id);
-        $comment->votes()->syncWithoutDetaching([
-            $user->id => ['vote' => $value]
-        ]);
+
+        if ($value === 0) {
+            $comment->votes()->detach([$user->id]);
+        }
+        else {
+            $comment->votes()->syncWithoutDetaching([
+                $user->id => ['vote' => $value]
+            ]);
+        }
     }
 }

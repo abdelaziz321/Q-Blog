@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Http\Requests\CommentRequest;
 use App\Http\Resources\CommentResource;
 use App\Repositories\Comment\RepositoryInterface as CommentRepo;
@@ -17,9 +18,12 @@ class CommentController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * create a new comment on the given $_POST['post_id']
      *
-     * @param  App\Http\Requests\CommentRequest  $request
+     * @param string $_POST['body']
+     * @param int    $_POST['post_id']
+     *
+     * @param  CommentRequest $request
      * @return \Illuminate\Http\Response
      */
     public function store(CommentRequest $request)
@@ -34,15 +38,17 @@ class CommentController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * update the given $id comment using $_POST['body']
      *
-     * @param  App\Http\Requests\CommentRequest  $request
+     * @param string $_POST['body']
+     *
+     * @param  CommentRequest $request
      * @param  int  $id the id of the comment
      * @return \Illuminate\Http\Response
      */
     public function update(CommentRequest $request, int $id)
     {
-        $this->commentRepo->update($id, $request->body);
+        $comment = $this->commentRepo->update($id, $request->body);
 
         return response()->json([
             'comment' => new CommentResource($comment)
@@ -50,7 +56,7 @@ class CommentController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * destroy the comment only if the user own this comment or admin|moderator
      *
      * @param  int  $id the id of the comment
      * @return \Illuminate\Http\Response
@@ -69,36 +75,44 @@ class CommentController extends Controller
     }
 
     /**
-     * the authenticated user vote up the given comment
+     * the authenticated user unvote && vote up|down the given comment id
+     *
+     * @param string $_GET['action']    possible values ==> up|down|del
      *
      * @param  int $id the id of the comment
      * @return \Illuminate\Http\Response
      */
-    public function vote(int $id, AuthUserRepo $authUserRepo)
+    public function vote(Request $request, int $id, AuthUserRepo $authUserRepo)
     {
+        $action = $request->validate([
+            'action' => ['regex:#^(up|down|del)$#'],
+        ])['action'];
+
         $authUserRepo->can('createOrVote', 'App\\Comment');
 
-        $this->commentRepo->vote($id, 1);
+        switch ($action) {
+            case 'up':
+                $this->commentRepo->vote($id, 1);
+                $msg = 'voted up';
+                break;
+
+            case 'down':
+                $this->commentRepo->vote($id, -1);
+                $msg = 'voted down';
+                break;
+
+            case 'del':
+                $this->commentRepo->vote($id, 0);
+                $msg = 'deleted your vote for';
+                break;
+
+            default:
+                # we fall in a black hole
+                return;
+        }
 
         return response()->json([
-            'message' => "you voted up this comment successfully"
-        ], 200);
-    }
-
-    /**
-     * the authenticated user vote down the given comment
-     *
-     * @param  int $id the id of the comment
-     * @return \Illuminate\Http\Response
-     */
-    public function unvote(int $id, AuthUserRepo $authUserRepo)
-    {
-        $authUserRepo->can('createOrVote', 'App\\Comment');
-
-        $this->commentRepo->vote($id, -1);
-
-        return response()->json([
-            'message' => "you voted down this comment successfully"
+            'message' => "you $msg this comment successfully"
         ], 200);
     }
 }

@@ -16,11 +16,8 @@ Route::get('categories/search', 'HomeController@searchCategories');
 Route::resource('posts', 'PostController', [
     'only' => ['index', 'show']
 ]);
-
-Route::middleware('auth:api')->group(function () {
-    Route::post('posts/recommend/{post}', 'PostController@recommend');
-    Route::post('posts/unrecommend/{post}', 'PostController@unrecommend');
-});
+Route::get('posts/{post}/comments', 'PostController@postComments');
+Route::post('posts/{post}/recommendation', 'PostController@recommendation')->middleware('auth:api');
 
 
 // ==== comments routes
@@ -29,17 +26,12 @@ Route::middleware('auth:api')->group(function () {
         'only' => ['store', 'update', 'destroy']
     ]);
 
-    Route::post('comments/vote/{comment}', 'CommentController@vote');
-    Route::post('comments/unvote/{comment}', 'CommentController@unvote');
+    Route::post('comments/{comment}/voting', 'CommentController@vote');
 });
 
 
 // ==== users routes
-Route::middleware('auth:api')->group(function () {
-    Route::resource('users', 'UserController', [
-        'only' => ['show', 'update']
-    ]);
-});
+Route::put('users/{user}', 'UserController@update')->middleware('auth:api');
 
 
 // ======================= admin panel routes =======================

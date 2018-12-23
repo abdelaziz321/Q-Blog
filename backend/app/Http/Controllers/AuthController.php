@@ -6,6 +6,7 @@ use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use App\Repositories\User\RepositoryInterface as UserRepo;
 
 class AuthController extends Controller
 {
@@ -17,15 +18,15 @@ class AuthController extends Controller
     }
 
     /**
-     * @param string $username
-     * @param string $email
-     * @param string $password
-     * @param string $password_confirmation
-     * @param string $description
+     * @param string $_POST['username']
+     * @param string $_POST['email']
+     * @param string $_POST['password']
+     * @param string $_POST['password_confirmation']
+     * @param string $_POST['description']
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function register(Request $request)
+    public function register(Request $request, UserRepo $userRepo)
     {
         $userData = $request->validate([
             'username'    => 'required|min:3',
@@ -34,25 +35,19 @@ class AuthController extends Controller
             'description' => 'string|max:120'
         ]);
 
-        $plainPassword = $userData['password'];
-
-        $userData['password'] = \Hash::make($request->password);
-        $userData['slug'] = str_slug($userData['username']);
-        $userData['privilege'] = 1;
-
-        $user = User::create($userData);
+        $user = $userRepo->create($userData);
 
         $token = \Auth::attempt([
             'email'    => $userData['email'],
-            'password' => $plainPassword
+            'password' => $userData['password']
         ]);
 
         return $this->authenticatedResponse($token, $user);
     }
 
     /**
-     * @param string $email
-     * @param string $password
+     * @param string $_POST['email']
+     * @param string $_POST['password']
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -89,7 +84,7 @@ class AuthController extends Controller
     /**
      * refresh a token.
      *
-     * @return
+     * @return \Illuminate\Http\JsonResponse
      */
     public function refresh()
     {
@@ -116,7 +111,7 @@ class AuthController extends Controller
      * Get the token array structure.
      *
      * @param  string $token
-     *
+     * @param  \App\User $user
      * @return \Illuminate\Http\JsonResponse
      */
     public function authenticatedResponse($token, $user = null)

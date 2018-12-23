@@ -14,6 +14,9 @@ class UserController extends Controller
     /**
      * search for authors have posts using their emails and username
      *
+     * @param string $_GET['q']
+     *
+     * @param Request $request
      * @return \Illuminate\Http\Response
      */
     public function search(Request $request, UserRepo $userRepo)
@@ -27,15 +30,14 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      *
+     * @param string $_POST['username']
+     * @param string $_POST['description']
+     * @param string $_POST['avatar']
+     *
      * @param string $slug
-     *
-     * @param string $username == provides ==> slug
-     * @param string $description
-     * @param string $avatar
-     *
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateUserRequest $request, string $userSlug, AuthUserRepo $AuthUserRepo)
+    public function update(UpdateUserRequest $request, string $slug, AuthUserRepo $AuthUserRepo)
     {
         $data = $request->all();
         $user = $AuthUserRepo->user();

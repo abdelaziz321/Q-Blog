@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Http\Resources\PostResource;
 use App\Http\Resources\CommentResource;
 use App\Http\Requests\PostsFilterReuqest;
 use App\Http\Resources\PaginatedCollection;
+use App\Repositories\Comment\RepositoryInterface as CommentRepo;
 use App\Repositories\Post\RepositoryInterface as PostRepo;
 use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
@@ -19,8 +21,18 @@ class PostController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * get sorted paginated posts
      *
+     * @param string $_GET['views']             possible values ==> DESC|ASC
+     * @param string $_GET['date']              possible values ==> DESC|ASC
+     * @param string $_GET['comments']          possible values ==> DESC|ASC
+     * @param string $_GET['recommendations']   possible values ==> DESC|ASC
+     * @param string $_GET['title']
+     * @param string $_GET['author']
+     * @param string $_GET['category']
+     * @param array  $_GET['tags']
+     *
+     * @param PostsFilterReuqest $request
      * @return \Illuminate\Http\Response
      */
     public function index(PostsFilterReuqest $request)
@@ -34,62 +46,74 @@ class PostController extends Controller
 
         $total = $this->postRepo->getTotalPaginated();
 
-        # PaginatedCollection(resource, collects, repo, per_page)
+        # PaginatedCollection(resource, collects, total, per_page)
         return new PaginatedCollection($posts, 'PostRow', $total , $limit);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  string $slug
      * @return \Illuminate\Http\Response
      */
-    public function show($slug)
+    public function show(string $slug)
     {
-        $post = $this->postRepo->getPostWithItsComments($slug);
-        $this->postRepo->increment('views', $post->id);
+        $post = $this->postRepo->getPost($slug, true);
 
         return response()->json([
-            'post'     => new PostResource($post),
-            'comments' => CommentResource::collection($post->comments)
+            'post' => new PostResource($post)
         ], 200);
+    }
+
+    /**
+     * get the comments of the given post.
+     *
+     * @param  string $slug the slug of the post
+     * @return \Illuminate\Http\Response
+     */
+    public function postComments(Request $request, string $slug, CommentRepo $commentRepo)
+    {
+        $limit = 8;
+        $comments = $commentRepo->getPostComments(
+            $slug, $limit, $request->query('page', 1)
+        );
+
+        # PaginatedCollection(resource, collects, total, per_page)
+        return new PaginatedCollection($comments, 'Comment', 0 , $limit);
     }
 
     /**
      * the authenticated user recommend the given post
      *
+     * @param  string $_GET['action']  possible values ==> recommend|unrecommend
      * @param  string $slug
      * @return \Illuminate\Http\Response
      */
-    public function recommend(string $slug, AuthUserRepo $authUserRepo)
+    public function recommendation(Request $request, string $slug, AuthUserRepo $authUserRepo)
     {
-        $post = $this->postRepo->getBy('slug', $slug);
+        $action = $request->validate([
+            'action' => ['regex:#^(recommend|unrecommend)$#'],
+        ])['action'];
 
+        $post = $this->postRepo->getBy('slug', $slug);
         $authUserRepo->can('recommend', $post);
 
-        $this->postRepo->recommend($post->id);
+        switch ($action) {
+            case 'recommend':
+                $this->postRepo->recommendation($post->id, true);
+                break;
+
+            case 'unrecommend':
+                $this->postRepo->recommendation($post->id, false);
+                break;
+
+            default:
+                # we fall in a black hole
+                return;
+        }
 
         return response()->json([
-            'message' => "the post has been recommended successfully"
-        ], 200);
-    }
-
-    /**
-     * the authenticated user unrecommend the given post
-     *
-     * @param  string $slug
-     * @return \Illuminate\Http\Response
-     */
-    public function unrecommend(string $slug, AuthUserRepo $authUserRepo)
-    {
-        $post = $this->postRepo->getBy('slug', $slug);
-
-        $authUserRepo->can('recommend', $post);
-
-        $this->postRepo->unrecommend($post->id);
-
-        return response()->json([
-            'message' => "the post has been unrecommended successfully"
+            'message' => "the post has been {$action}ed successfully"
         ], 200);
     }
 }
