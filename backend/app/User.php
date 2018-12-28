@@ -105,11 +105,6 @@ class User extends Authenticatable implements JWTSubject
         return true;
     }
 
-    public function getRouteKeyName()
-    {
-        return 'slug';
-    }
-
     //================= JWT Auth =================
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.

@@ -2,14 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Image;
-use App\Post;
-use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use App\Helpers\UploadingFiles;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PostResource;
-use App\Http\Resources\PostRowResource;
 use App\Http\Resources\CommentResource;
 use App\Http\Requests\Admin\PostRequest;
 use App\Http\Resources\PaginatedCollection;

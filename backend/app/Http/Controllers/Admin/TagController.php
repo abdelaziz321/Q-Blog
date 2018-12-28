@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Http\Resources\TagResource;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\TagRequest;
-use App\Http\Resources\PostRowResource;
 use App\Http\Resources\PaginatedCollection;
 use App\Repositories\Tag\RepositoryInterface as TagRepo;
 use App\Repositories\Post\RepositoryInterface as PostRepo;
