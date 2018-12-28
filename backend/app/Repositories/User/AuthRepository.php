@@ -27,8 +27,8 @@ class AuthRepository extends Repository implements AuthRepositoryInterface
      * @param  array  $data
      * @return void
      */
-    public function update(array $data, string $field = null, $value = null)
+    public function update(array $data)
     {
-        return parent::update($data, 'id', $this->_record->id);
+        return parent::updateUser($data, $this->_record->id);
     }
 }

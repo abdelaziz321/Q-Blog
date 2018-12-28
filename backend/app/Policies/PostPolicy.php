@@ -88,7 +88,14 @@ class PostPolicy
         return false;
     }
 
-    public function publish(User $user, Post $post)
+    /**
+     * Determine whether the user can publish|unpublish the given post.
+     *
+     * @param  \App\User  $user
+     * @param  \App\Post  $post
+     * @return mixed
+     */
+    public function publishing(User $user, Post $post)
     {
         # admin
         if ($user->isAdmin()) {

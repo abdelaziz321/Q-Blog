@@ -42,6 +42,21 @@ class BaseRepository
     }
 
     /**
+     * check if the given $slug exists in the _model table.
+     * we don't care if the given $except slug exists or not.
+     *
+     * @param  string $slug
+     * @param  string $except
+     * @return bool
+     */
+    public function checkIfExist(string $slug, string $except = '')
+    {
+        return $this->_model::where('slug', $slug)
+            ->where('slug', '!=', $except)
+            ->count() > 0;
+    }
+
+    /**
      * Get the total number of records being paginated.
      *
      * @return int

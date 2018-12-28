@@ -65,7 +65,7 @@ class CommentController extends Controller
     {
         $comment = $this->commentRepo->getBy('id', $id);
 
-        $authUserRepo->can('delete', $comment);
+        $this->authorize('delete', $comment);
 
         $this->commentRepo->delete($id);
 
@@ -82,13 +82,13 @@ class CommentController extends Controller
      * @param  int $id the id of the comment
      * @return \Illuminate\Http\Response
      */
-    public function vote(Request $request, int $id, AuthUserRepo $authUserRepo)
+    public function voting(Request $request, int $id, AuthUserRepo $authUserRepo)
     {
         $action = $request->validate([
-            'action' => ['regex:#^(up|down|del)$#'],
+            'action' => ['required', 'regex:#^(up|down|del)$#'],
         ])['action'];
 
-        $authUserRepo->can('createOrVote', 'App\\Comment');
+        $this->authorize('createOrVote', 'App\\Comment');
 
         switch ($action) {
             case 'up':

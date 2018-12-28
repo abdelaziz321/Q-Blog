@@ -35,26 +35,6 @@ class UserResource extends JsonResource
             'total_recommendations' => $this->when($this->recommendations_count, $this->recommendations_count)
         ];
 
-        $this->getModeratorCategory($array);
-
         return $array;
-    }
-
-    public function getModeratorCategory(&$array)
-    {
-        if ($array['role'] != 'moderator') {
-            return;
-        }
-
-        $category = $this->category()->first();
-        if (empty($category)) {
-            return;
-        }
-
-        $array['category'] = [
-            'id'    => $this->id,
-            'slug'  => $this->slug,
-            'title' => $this->title
-        ];
     }
 }

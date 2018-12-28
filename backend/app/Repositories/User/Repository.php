@@ -27,12 +27,76 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
-     * @param  string $_GET['q'] the string by which we will search
+     * get pageinated users with counting:
+     * [posts, comments, votes, recommendations]
+     *
+     * @param  int     $limit
+     * @param  int     $offset
+     * @param  boolean $banned
+     * @return Illuminate\Database\Eloquent\Collection
+     */
+    public function getPaginatedUsers(int $limit, int $page = 1, bool $banned = false)
+    {
+        $query = User::query();
+
+        if ($banned) {
+            $query->where('privilege', 0);
+        }
+
+        $users = $query->withCount([
+            'posts', 'comments', 'votes', 'recommendations'
+        ])->get();
+
+        $this->_total = $users->count();
+
+        $offset = ($page - 1) * $limit;
+        return $users->slice($offset, $limit);
+    }
+
+    /**
+     * get the $slug user with counting:
+     * [posts, comments, votes, recommendations]
+     *
+     * @param  string $slug
+     * @return \App\Tag
+     */
+    public function getUser(string $slug)
+    {
+        if (empty($this->_record)) {
+            $this->_record = User::withCount(['posts', 'comments', 'votes', 'recommendations'])
+                ->where('slug', $slug)
+                ->firstOrFail();
+        }
+
+        return $this->_record;
+    }
+
+    /**
+     * search authors using their username & email
+     *
+     * @param  string $q the string by which we will search
+     * @return Illuminate\Database\Eloquent\Collection
+     */
+    public function searchAuthors(string $q)
+    {
+        return User::has('posts')
+            ->where(function ($query) use ($q) {
+                $query->where('username', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
+            })
+            ->limit(10)
+            ->get();
+    }
+
+    /**
+     * search unbanned users using their username & email
+     *
+     * @param  string $q the string by which we will search
      * @return Illuminate\Database\Eloquent\Collection
      */
     public function search(string $q)
     {
-        return User::has('posts')
+        return User::where('privilege', '>', 0)
             ->where(function ($query) use ($q) {
                 $query->where('username', 'like', "%{$q}%")
                     ->orWhere('email', 'like', "%{$q}%");
@@ -62,38 +126,21 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
-     * check if the given $slug exists in the users table.
-     * we don't care if the $except slug exists or not.
+     * update the given user using the $data arary.
      *
-     * @param  string $slug
-     * @param  string $except
-     * @return int
-     */
-    public function checkIfExist(string $slug, string $except = '')
-    {
-        return User::where('slug', $slug)
-            ->where('slug', '!=', $except)
-            ->count();
-    }
-
-    /**
-     * update the user which has $field=$value using the $data arary
-     * only update [username, slug, description, avatar]
-     *
-     * @param  array  $data
-     * @param  string $field
-     * @param  string $value
+     * @param  array $data {username, slug, description, avatar}
+     * @param  int   $id the id of the user
      * @return void
      */
-    public function update(array $data, string $field, $value)
+    public function updateUser(array $data, int $id)
     {
-        $user = $this->getBy($field, $value);
+        $user = $this->getBy('id', $id);
 
-        $user->slug = $data['slug'];
+        $user->slug = str_slug($data['username'] , '-');
         $user->username = $data['username'];
         $user->description = $data['description'];
 
-        if ( isset($data['avatar']) ) {
+        if (isset($data['avatar'])) {
             $user->avatar = $data['avatar'];
         }
 
@@ -103,12 +150,28 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
+     * delete the given $slug user and return its username
+     *
+     * @param  string $slug
+     * @return string $username
+     */
+    public function delete(string $slug)
+    {
+        $user = $this->getBy('slug', $slug);
+        $username = $user->username;
+
+        $user->delete();
+
+        return $username;
+    }
+
+    /**
      * update the privilege of the given user to be a moderator
      * if the given user is admin he will still as admin
      *
      * @param int $id the id of the user
      */
-    public function setAsModerator(int $id)
+    public function setAsModeratorIfNotAdmin(int $id)
     {
         User::where('id', $id)
             ->where('privilege', '!=', 4)
@@ -125,7 +188,9 @@ class Repository extends BaseRepository implements RepositoryInterface
      */
     public function setAsRegularUserIfRequired(int $id)
     {
-        $user = $this->getBy('id', $id);
+        $user = User::withCount('category')
+            ->where('id', $id)
+            ->firstOrFail();
 
         # we will take no action if he is an admin
         if ($user->isAdmin()) {
@@ -133,12 +198,48 @@ class Repository extends BaseRepository implements RepositoryInterface
         }
 
         # we will take no action if he still moderate some categories
-        if ($user->category()->exists()) {
+        if ($user->category_count > 0) {
             return;
         }
 
         # sorry man, you are fired - :'( -
         $user->privilege = 1;
+        $user->save();
+    }
+
+    /**
+     * assign role to the given $slug user
+     *
+     * @param  string $slug
+     * @param  string $role
+     * @return string
+     */
+    public function assignRole(string $slug, string $role)
+    {
+        $user = $this->getBy('slug', $slug);
+
+        switch ($role) {
+            case 'admin':
+                $user->privilege = 4;
+                break;
+
+            case 'author':
+                $user->privilege = 2;
+                break;
+
+            case 'regular':
+                $user->privilege = 1;
+                break;
+
+            case 'banned':
+                $user->privilege = 0;
+                break;
+
+            default:
+                # we fall in a black hole
+                return;
+        }
+
         $user->save();
     }
 

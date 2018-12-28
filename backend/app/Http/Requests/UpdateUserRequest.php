@@ -44,9 +44,9 @@ class UpdateUserRequest extends FormRequest
                 function($attribute, $value, $fail) use ($newSlug, $urlSlug) {
                     # we want the new slug to be different from all slugs in DB
                     # except from the slug given in the url
-                    $users = $this->authUserRepo->checkIfExist($newSlug, $urlSlug);
+                    $slugExist = $this->authUserRepo->checkIfExist($newSlug, $urlSlug);
 
-                    if ($users > 0) {
+                    if ($slugExist) {
                         return $fail("'{$value}' is alrady exists.");
                     }
                 },

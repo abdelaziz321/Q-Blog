@@ -66,24 +66,23 @@ class PostController extends Controller
     }
 
     /**
-     * get the comments of the given post.
+     * get the comments of the given published post.
      *
      * @param  string $slug the slug of the post
      * @return \Illuminate\Http\Response
      */
     public function postComments(Request $request, string $slug, CommentRepo $commentRepo)
     {
-        $limit = 8;
         $comments = $commentRepo->getPostComments(
-            $slug, $limit, $request->query('page', 1)
+            $slug, 8, $request->query('page', 1), true
         );
 
-        # PaginatedCollection(resource, collects, total, per_page)
-        return new PaginatedCollection($comments, 'Comment', 0 , $limit);
+        return CommentResource::collection($comments);
     }
 
     /**
-     * the authenticated user recommend the given post
+     * the authenticated user recommend|unrecommend the given post depending on
+     * the given query parameter `action`.
      *
      * @param  string $_GET['action']  possible values ==> recommend|unrecommend
      * @param  string $slug
@@ -92,11 +91,11 @@ class PostController extends Controller
     public function recommendation(Request $request, string $slug, AuthUserRepo $authUserRepo)
     {
         $action = $request->validate([
-            'action' => ['regex:#^(recommend|unrecommend)$#'],
+            'action' => ['required', 'regex:#^(recommend|unrecommend)$#'],
         ])['action'];
 
         $post = $this->postRepo->getBy('slug', $slug);
-        $authUserRepo->can('recommend', $post);
+        $this->authorize('recommend', $post);
 
         switch ($action) {
             case 'recommend':

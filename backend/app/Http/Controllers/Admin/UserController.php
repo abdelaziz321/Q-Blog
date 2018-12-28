@@ -2,189 +2,166 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Post;
-use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
-use App\Http\Resources\PostRowResource;
 use App\Http\Resources\UserSearchResource;
+use App\Http\Resources\PaginatedCollection;
+use App\Repositories\Post\RepositoryInterface as PostRepo;
+use App\Repositories\User\RepositoryInterface as UserRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
+use App\Repositories\Category\RepositoryInterface as CategoryRepo;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    private $authUserRepo;
+
+    public function __construct(AuthUserRepo $authUserRepo)
     {
-        $this->authorize('viewUsers', User::class);
-
-        $users = User::withCount([
-            'posts', 'comments', 'votes', 'recommendations'
-        ])->paginate(15);
-
-        $users->getCollection()->transform(function ($user) {
-            return new UserResource($user);
-        });
-
-        return $users;
+        $this->authUserRepo = $authUserRepo;
     }
 
     /**
-     * Display a listing of the banned Users.
+     * get paginated users.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function bannedUsers()
+    public function index(Request $request)
     {
-        $this->authorize('viewUsers', User::class);
+        $this->authorize('viewUsers', 'App\\User');
 
-        $users = User::where('privilege', 0)
-                     ->withCount(['posts', 'comments', 'votes', 'recommendations'])
-                     ->paginate(15);
+        $limit = 10;
+        $users = $this->authUserRepo->getPaginatedUsers(
+            $limit, $request->query('page', 1), false
+        );
 
-        $users->getCollection()->transform(function ($user) {
-            return new UserResource($user);
-        });
+        $total = $this->authUserRepo->getTotalPaginated();
 
-        return $users;
+        # PaginatedCollection(resource, collects, total, per_page)
+        return new PaginatedCollection($users, 'User', $total , $limit);
     }
 
     /**
-     * Display the specified resource.
+     * get paginated banned users.
      *
-     * @param  int  $id
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function show($slug)
+    public function bannedUsers(Request $request)
     {
-        $this->authorize('viewUsers', User::class);
+        $this->authorize('viewUsers', 'App\\User');
 
-        $user = User::withCount(['posts', 'comments', 'votes', 'recommendations'])
-                    ->where('slug', $slug)
-                    ->firstOrFail();
+        $limit = 10;
+        $users = $this->authUserRepo->getPaginatedUsers(
+            $limit, $request->query('page', 1), true
+        );
+
+        $total = $this->authUserRepo->getTotalPaginated();
+
+        # PaginatedCollection(resource, collects, total, per_page)
+        return new PaginatedCollection($users, 'User', $total , $limit);
+    }
+
+    /**
+     * get the $slug user.
+     *
+     * @param  string $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function show(string $slug, UserRepo $userRepo)
+    {
+        $this->authorize('viewUsers', 'App\\User');
+
+        $user = $userRepo->getUser($slug);
 
         return response()->json([
             'user' => new UserResource($user)
         ], 200);
     }
 
-    public function getUserPosts($slug)
+    /**
+     * get paginated posts of the given user
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string $slug the slug of the user
+     * @return \Illuminate\Http\Response
+     */
+    public function getUserPosts(Request $request, string $slug, PostRepo $postRepo)
     {
-        $this->authorize('viewUsers', User::class);
+        $this->authorize('viewUsers', 'App\\User');
 
-        $user = User::where('slug', $slug)->firstOrFail();
-        $posts = Post::with(['category', 'author'])
-                     ->withCount(['comments', 'recommendations'])
-                     ->where('author_id', $user->id)
-                     ->orderBy('id', 'desc')
-                     ->paginate(10);
+        $limit = 8;
+        $posts = $postRepo->getPaginatedUserPosts(
+            $slug, $limit, $request->query('page', 1)
+        );
 
-        $posts->getCollection()->transform(function ($post) {
-            return new PostRowResource($post);
-        });
+        $total = $postRepo->getTotalPaginated();
 
-        return $posts;
+        # PaginatedCollection(resource, collects, total, per_page)
+        return new PaginatedCollection($posts, 'PostRow', $total , $limit);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * delete the given $slug user.
      *
-     * @param  int  $id
+     * @param  string $slug
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user)
+    public function destroy(string $slug, UserRepo $userRepo)
     {
+        $user = $userRepo->getBy('slug', $slug);
+
         $this->authorize('delete', $user);
 
-        $user->delete();
+        $username = $userRepo->delete($slug);
+
         return response()->json([
-            'message'   => "'{$user->username}' has been deleted successfully"
+            'message'   => "the user '{$username}' has been deleted successfully"
         ], 200);
     }
 
-    public function ban(User $user)
+    /**
+     * assign role to the given $slug user
+     *
+     * @param  string $_GET['role'] possible values ==> admin|moderator|author|regular|banned
+     *
+     * @param  Request $request
+     * @param  string  $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function assignRole(Request $request, string $slug, UserRepo $userRepo, CategoryRepo $categoryRepo)
     {
-        $this->authorize('assignRole', User::class);
+        $role = $request->validate([
+            'role' => ['required', 'regex:(admin|moderator|author|regular|banned)']
+        ])['role'];
 
-        if ($user->role() === 'moderator') {
-          $user->load('category');
-          $category = $user->category->title;
+        $user = $userRepo->getBy('slug', $slug);
+        # does the admin $user have any category he is moderate
+        $moderate = ($user->role() === 'admin') ? $categoryRepo->isModerate($user->id) : false;
 
-          return response()->json([
-              'message'   => "You can't ban '{$user->username}', this user is the moderator of the category '$category'"
-          ], 401);
-        }
+        $this->authorize('assignRole', [$user, $role, $moderate]);
 
-        $user->privilege = 0;
-        $user->save();
-
-        return response()->json([
-            'message'   => "'{$user->username}' has been banned successfully"
-        ], 200);
-    }
-
-    public function unban(User $user)
-    {
-        $this->authorize('assignRole', User::class);
-
-        $user->privilege = 1;
-        $user->save();
-
-        return response()->json([
-            'message'   => "'{$user->username}' has been unbanned successfully"
-        ], 200);
-    }
-
-    public function assignRole(Request $request, User $user)
-    {
-        $this->authorize('assignRole', User::class);
-        $request->validate([
-          'role' => [
-              'required',
-              'regex:(admin|author|regular\ user|banned\ user)'
-            ]
-        ]);
-
-        switch ($request->role) {
-          case 'admin':
-            $user->privilege = 4;
-            break;
-          case 'author':
-            $user->privilege = 2;
-            break;
-          case 'regular user':
-            $user->privilege = 1;
-            break;
-          case 'banned user':
-            $user->privilege = 0;
-            break;
-        }
-        $user->save();
+        $this->authUserRepo->assignRole($slug, $role);
 
         return response()->json([
             'message'   => "'{$user->username}' has been updated successfully"
         ], 200);
     }
-    /*
-    * search for users using their emails and username
-    *
-    * @return \Illuminate\Http\Response
-    */
+
+    /**
+     * search for unbanned users using their username and email.
+     *
+     * @param string $_GET['q'] the string by which we will search
+     *
+     * @param Request $request
+     * @return Illuminate\Http\JsonResponse
+     */
     public function search(Request $request)
     {
         $q = $request->query('q');
-        $users = User::where('privilege', '>', 0)
-                     ->where('username', 'like', "%{$q}%")
-                     ->orWhere('email', 'like', "%{$q}%")
-                     ->get();
+        $users = $this->authUserRepo->search($q);
 
-        $users->transform(function ($user) {
-            return new UserSearchResource($user);
-        });
-
-        return $users;
+        return UserSearchResource::collection($users);
     }
 }

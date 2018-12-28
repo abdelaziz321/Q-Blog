@@ -27,24 +27,6 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
-     * get the category $slug with the moderator of this category
-     *
-     * @param  string $slug
-     * @return \App\Category
-     */
-    public function getWithModerator(string $slug)
-    {
-        if (empty($this->_record)) {
-            $this->_record = Category::with(['moderator'])
-                ->withCount('posts')
-                ->where('slug', $slug)
-                ->firstOrFail();
-        }
-
-        return $this->_record;
-    }
-
-    /**
      * get pageinated categories with counting posts
      * also get the moderator of each category
      *
@@ -65,13 +47,32 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
-     * create a new category
+     * get the $slug category with the moderator of this category
+     *
+     * @param  string $slug
+     * @return \App\Category
+     */
+    public function getWithModerator(string $slug)
+    {
+        if (empty($this->_record)) {
+            $this->_record = Category::with(['moderator'])
+                ->withCount('posts')
+                ->where('slug', $slug)
+                ->firstOrFail();
+        }
+
+        return $this->_record;
+    }
+
+    /**
+     * create a new category and return the category with its moderator
      *
      * @param  array $data consists of {title, slug, description, moderator}
      * @return \App\Category
      */
     public function create($data)
     {
+        $data['slug'] = str_slug($data['title'] , '-');
         $category = Category::create($data);
         $category->load('moderator');
 
@@ -79,35 +80,54 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
-     * update the given $slug category
+     * update the given $slug category and return the category with the old moderator
      *
      * @param  string $slug
-     * @param  array  $data consists of {title, slug, description, moderator}
-     * @return \App\Category
+     * @param  array  $data consists of {title, description, moderator}
+     * @return array  [$category, $oldModerator]
      */
     public function update(string $slug, array $data)
     {
         $category = $this->getWithModerator($slug);
-        $moderator = $category->moderator;
+        $oldModerator = $category->moderator;
 
+        $data['slug'] = str_slug($data['title'] , '-');
         $category->update($data);
 
-        resolve(UserRepo::class)->setAsRegularUserIfRequired($moderator);
-
-        return $category;
+        return [$category, $oldModerator];
     }
 
+    /**
+     * delete the given $slug category and return its [title, moderator]
+     *
+     * @param  string $slug
+     * @return array [$title, $array]
+     */
     public function delete(string $slug)
     {
         $category = $this->getBy('slug', $slug);
         $moderator = $category->moderator;
+        $title = $category->title;
 
         $category->delete();
 
-        resolve(UserRepo::class)->setAsRegularUserIfRequired($moderator);
+        return [$title, $moderator];
     }
 
     /**
+     * determine if the given user moderate any existance category.
+     *
+     * @param  int     $id the user id
+     * @return boolean
+     */
+    public function isModerate(int $id)
+    {
+        return Category::where('moderator', $id)->count() > 0;
+    }
+
+    /**
+     * search categories using their title
+     *
      * @param  string $q the string by which we will search
      * @return Illuminate\Database\Eloquent\Collection
      */
@@ -116,20 +136,5 @@ class Repository extends BaseRepository implements RepositoryInterface
         return Category::where('title', 'like', "%{$q}%")
             ->limit(10)
             ->get();
-    }
-
-    /**
-     * check if the given $slug exists in the users table.
-     * we don't care if the $except slug exists or not.
-     *
-     * @param  string $slug
-     * @param  string $except
-     * @return int
-     */
-    public function checkIfExist(string $slug, string $except = '')
-    {
-        return Category::where('slug', $slug)
-            ->where('slug', '!=', $except)
-            ->count();
     }
 }

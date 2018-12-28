@@ -6,12 +6,14 @@ use Image;
 use App\Post;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
+use App\Helpers\UploadingFiles;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PostResource;
 use App\Http\Resources\PostRowResource;
 use App\Http\Resources\CommentResource;
 use App\Http\Requests\Admin\PostRequest;
 use App\Http\Resources\PaginatedCollection;
+use App\Repositories\Tag\RepositoryInterface as TagRepo;
 use App\Repositories\Post\RepositoryInterface as PostRepo;
 use App\Repositories\Comment\RepositoryInterface as CommentRepo;
 use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
@@ -33,7 +35,7 @@ class PostController extends Controller
      */
     public function index(Request $request, AuthUserRepo $authUserRepo)
     {
-        $authUserRepo->can('viewPosts', 'App\\Post');
+        $this->authorize('viewPosts', 'App\\Post');
 
         $limit = 15;
         $posts = $this->postRepo->getPaginatedPosts(
@@ -54,7 +56,7 @@ class PostController extends Controller
      */
     public function unPublishedPosts(Request $request, AuthUserRepo $authUserRepo)
     {
-        $authUserRepo->can('viewPosts', 'App\\Post');
+        $this->authorize('viewPosts', 'App\\Post');
 
         $limit = 15;
         $posts = $this->postRepo->getPaginatedPosts(
@@ -68,47 +70,61 @@ class PostController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     *
+     * @param  string $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function show(string $slug, AuthUserRepo $authUserRepo)
+    {
+        $this->authorize('viewPosts', 'App\\Post');
+
+        $post = $this->postRepo->getPost($slug);
+
+        return response()->json([
+            'post' => new PostResource($post)
+        ], 200);
+    }
+
+    /**
      * get the comments of the given post.
      *
      * @param  string $slug the slug of the post
      * @return \Illuminate\Http\Response
      */
-    public function postComments(string $slug, AuthUserRepo $authUserRepo, CommentRepo $commentRepo)
+    public function postComments(Request $request, string $slug, CommentRepo $commentRepo)
     {
-        $authUserRepo->can('viewPosts', 'App\\Post');
+        $comments = $commentRepo->getPostComments(
+            $slug, 8, $request->query('page', 1), false
+        );
 
-        $comments = $commentRepo->getPostComments($slug);
-
-        return CommentResource::Collection($comments);
+        return CommentResource::collection($comments);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * create a new post.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param string        $_GET['title']
+     * @param string        $_GET['body']          --html content--
+     * @param int           $_GET['category_id']
+     * @param array         $_GET['tags']
+     * @param UploadedFile  $_GET['caption']
+     *
+     * @param  PostRequest  $request
      * @return \Illuminate\Http\Response
      */
     public function store(PostRequest $request, TagRepo $tagRepo)
     {
         $data = $request->all();
-        $data['slug'] = str_slug($request->title , '-');
 
+        $data['body'] = UploadingFiles::uploadBodyImages($data['body']);
+        $data['caption'] = UploadingFiles::uploadCaption($request->file('caption'));
 
+        $post = $this->postRepo->create($data);
 
-        // handling the uploaded photo
-        if ($request->hasFile('caption') && $request->file('caption')->isValid()) {
-            $caption = $request->file('caption');
-            $captionName = time() . '-' . $caption->getClientOriginalName();
-            $data['caption'] = $captionName;
-            Image::make($caption)->fit(800, 500)->save(public_path('storage/posts/') . $captionName);
-        }
+        $tagsIds = $tagRepo->addTagsIfNotExists($data['tags']);
 
-
-        $tagsIds = $tagRepo->insertTagsIfNotExists();
-
-        $post = Post::create($data);
-
-        $post->load(['category', 'author', 'tags']);
+        $post = $this->postRepo->assignTagsTo($tagsIds, $post->id);
 
         return response()->json([
             'post' => new PostResource($post)
@@ -116,54 +132,43 @@ class PostController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Update the given post.
      *
-     * @param  int  $id
+     * @param string        $_GET['title']
+     * @param string        $_GET['body']          --html content--
+     * @param int           $_GET['category_id']
+     * @param array         $_GET['tags']
+     * @param UploadedFile  $_GET['caption']
+     *
+     * @param  PostRequest  $request
+     * @param  string $slug
      * @return \Illuminate\Http\Response
      */
-    public function show($slug)
-    {
-        $this->authorize('viewPosts', Post::class);
-
-        $post = Post::with(['category', 'author', 'tags'])
-                    ->withCount(['comments', 'recommendations'])
-                    ->where('slug', $slug)
-                    ->firstOrFail();
-
-        return response()->json([
-            'post' => new PostResource($post)
-        ], 200);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(PostRequest $request, Post $post)
+    public function update(PostRequest $request, string $slug, TagRepo $tagRepo)
     {
         $data = $request->all();
-        $data['slug'] = str_slug($request->title , '-');
 
-        // handling the uploaded photo
+        $post = $this->postRepo->getPost($slug);
+        $oldTagsIds = $this->postRepo->getPostTagsIds($post->id);
+
+        // update the post caption if a valid file given
         if ($request->hasFile('caption') && $request->file('caption')->isValid()) {
-            # delete the previos caption if exists
-            if ($post->caption != null) {
-                unlink(public_path('storage/posts/') . $post->caption);
-            }
-            $caption = $request->file('caption');
-            $captionName = time() . '-' . $caption->getClientOriginalName();
-            $data['caption'] = $captionName;
-            Image::make($caption)->fit(800, 500)->save(public_path('storage/posts/') . $captionName);
-        } else {
+            $data['caption'] = UploadingFiles::uploadCaption(
+                $request->file('caption'), $post->caption
+            );
+        }
+        else {
             unset($data['caption']);
         }
 
-        $post->update($data);
-        $post->addTags($data['tags']);
-        $post->load(['category', 'author', 'tags']);
+        $data['body'] = UploadingFiles::uploadBodyImages($data['body'], $post->body);
+
+        $this->postRepo->update($post->slug, $data);
+
+        $tagsIds = $tagRepo->addTagsIfNotExists($data['tags']);
+        $post = $this->postRepo->assignTagsTo($tagsIds, $post->id);
+
+        $tagRepo->removeTagsIfRequired($oldTagsIds);
 
         return response()->json([
             'post' => new PostResource($post)
@@ -171,60 +176,96 @@ class PostController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * delete the given post also remove the post tags if they weren't
+     * assigned to other posts
      *
-     * @param  int  $id
+     * @param  string $slug
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Post $post)
+    public function destroy(string $slug, TagRepo $tagRepo)
     {
+        $post = $this->postRepo->getPost($slug);
         $this->authorize('delete', $post);
 
-        $post->delete();
-        if ($post->caption) {
-          unlink(public_path('storage/posts/') . $post->caption);
-        }
+        $oldTagsIds = $this->postRepo->getPostTagsIds($post->id);
+
+        UploadingFiles::removeCaption($post->caption);
+        UploadingFiles::removeBodyImages($post->body);
+
+        $this->postRepo->delete($post->id);
+
+        $tagRepo->removeTagsIfRequired($oldTagsIds);
 
         return response()->json([
             'message' => "'{$post->title}' post has been deleted successfully"
         ], 200);
     }
 
-    public function publish(Post $post)
+
+    /**
+     * assign the given tags to the given post
+     * also remove the post tags if they weren't assigned to other posts
+     *
+     * @param array    $_GET['tags']
+     *
+     * @param  Request $request
+     * @param  string  $slug    the slug of the post
+     * @return \Illuminate\Http\Response
+     */
+    public function assignTags(Request $request, string $slug, TagRepo $tagRepo)
     {
-        $this->authorize('publish', $post);
+        $tags = $request->validate([
+            'tags' => 'required|array'
+        ])['tags'];
 
-        $post->published = 1;
-        $post->published_at = now()->toDateTimeString();
-        $post->save();
-
-        return response()->json([
-            'message' => "'{$post->title}' post has been published successfully"
-        ], 200);
-    }
-
-    public function unpublish(Post $post)
-    {
-        $this->authorize('publish', $post);
-
-        $post->published = 0;
-        $post->published_at = now()->toDateTimeString();
-        $post->save();
-
-        return response()->json([
-            'message' => "'{$post->title}' post has been unPublished successfully"
-        ], 200);
-    }
-
-    public function assignTags(Request $request, Post $post)
-    {
+        $post = $this->postRepo->getPost($slug);
         $this->authorize('assignTags', $post);
 
-        $post->addTags($request->tags);
-        $post->load(['category', 'author', 'tags']);
+        $oldTagsIds = $this->postRepo->getPostTagsIds($post->id);
+
+        $tagsIds = $tagRepo->addTagsIfNotExists($tags);
+        $post = $this->postRepo->assignTagsTo($tagsIds, $post->id);
+
+        $tagRepo->removeTagsIfRequired($oldTagsIds);
 
         return response()->json([
             'post'      => new PostResource($post)
+        ], 200);
+    }
+
+    /**
+     * the authenticated user publish|unpublish the given post depending on
+     * the given query parameter `action`.
+     *
+     * @param  string $_GET['action']  possible values ==> publish|unpublish
+     * @param  string $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function publishing(Request $request, string $slug, AuthUserRepo $authUserRepo)
+    {
+        $action = $request->validate([
+            'action' => ['required', 'regex:#^(publish|unpublish)$#'],
+        ])['action'];
+
+        $post = $this->postRepo->getBy('slug', $slug);
+        $this->authorize('publishing', $post);
+
+        switch ($action) {
+            case 'publish':
+                $this->postRepo->publishing($post->id, true);
+                break;
+
+            case 'unpublish':
+                $this->postRepo->publishing($post->id, false);
+                break;
+
+            default:
+                # we fall in a black hole
+                return;
+        }
+
+        return response()->json([
+            'message' => "the post '{$post->title}' has been {$action}ed successfully"
         ], 200);
     }
 }

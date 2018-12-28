@@ -9,6 +9,7 @@ use App\Repositories\Category\RepositoryInterface as CategoryRepo;
 class CategoryRequest extends FormRequest
 {
     private $authUserRepo;
+    private $categoryRepo;
 
     public function __construct(AuthUserRepo $authUserRepo, CategoryRepo $categoryRepo)
     {
@@ -55,14 +56,14 @@ class CategoryRequest extends FormRequest
                     if ($method == 'PUT') {
                         # we want the new slug to be different from all slugs in DB
                         # except from the slug given in the url
-                        $categories = $this->categoryRepo->checkIfExist($newSlug, $urlSlug);
+                        $slugExist = $this->categoryRepo->checkIfExist($newSlug, $urlSlug);
                     }
                     else {
                         # we want the new slug to be different from all slugs in DB
-                        $categories = $this->categoryRepo->checkIfExist($newSlug);
+                        $slugExist = $this->categoryRepo->checkIfExist($newSlug);
                     }
 
-                    if ($categories > 0) {
+                    if ($slugExist) {
                         return $fail("'{$value}' is alrady exists.");
                     }
                 },

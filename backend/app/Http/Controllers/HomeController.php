@@ -34,7 +34,7 @@ class HomeController extends Controller
     /**
      * search for categories using their title.
      *
-     * @param string $_GET['q']
+     * @param string $_GET['q'] the string by which we will search
      *
      * @param Request $request
      * @return Illuminate\Http\JsonResponse
@@ -50,8 +50,8 @@ class HomeController extends Controller
     /**
      * search for tags using their title.
      *
-     * @param string $_GET['q']
-     * 
+     * @param string $_GET['q'] the string by which we will search
+     *
      * @param Request $request
      * @return Illuminate\Http\JsonResponse
      */

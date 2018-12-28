@@ -60,15 +60,15 @@ class User extends Authenticatable implements JWTSubject
     }
 
     //================= methods =================
-    # 0 banned user    # 1 regular user     # 2 author
-    # 3 moderator      # 4 admin
+    # 0 banned      # 1 regular   # 2 author
+    # 3 moderator   # 4 admin
     public function role()
     {
         switch ($this->privilege) {
             case 0:
-                return 'banned user';
+                return 'banned';
             case 1:
-                return 'regular user';
+                return 'regular';
             case 2:
                 return 'author';
             case 3:

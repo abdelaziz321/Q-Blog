@@ -20,13 +20,13 @@ class CommentController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * get all comments with the sum of votes.
      *
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
-        $this->authUserRepo->can('view', 'App\\Comment');
+        $this->authorize('view', 'App\\Comment');
 
         $limit = 20;
         $comments = $this->commentRepo->getPaginatedComments(
@@ -35,12 +35,12 @@ class CommentController extends Controller
 
         $total = $this->commentRepo->getTotalPaginated();
 
-        # PaginatedCollection(resource, collects, repo, per_page)
+        # PaginatedCollection(resource, collects, total, per_page)
         return new PaginatedCollection($comments, 'Comment', $total, $limit);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * remove the given comment.
      *
      * @param  int  $id the id of the comment
      * @return \Illuminate\Http\Response
@@ -48,7 +48,7 @@ class CommentController extends Controller
     public function destroy(int $id)
     {
         $comment = $this->commentRepo->getBy('id', $id);
-        $this->authUserRepo->can('delete', $comment);
+        $this->authorize('delete', $comment);
 
         $this->commentRepo->delete($comment->id);
 

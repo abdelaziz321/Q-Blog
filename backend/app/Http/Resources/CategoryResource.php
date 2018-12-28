@@ -27,8 +27,7 @@ class CategoryResource extends JsonResource
     }
 
     /**
-     * add the moderator of the category to the array only if the relation
-     * is loaded and there exist a reference to the moderator in the DB
+     * add the moderator of the category to the array only if the relation is loaded.
      */
     private function getCategoryModerator(&$array)
     {
@@ -36,13 +35,14 @@ class CategoryResource extends JsonResource
             return;
         }
 
-        $moderator = $this->moderator()->first();
+        $moderator = $this->getRelationValue('moderator');
         if (empty($moderator)) {
             return;
         }
 
         $array['moderator'] = [
             'id'        => $moderator->id,
+            'slug'      => $moderator->slug,
             'avatar'    => $moderator->avatar,
             'username'  => $moderator->username
         ];

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Helpers\UploadingFiles;
 use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserSearchResource;
 use App\Repositories\User\RepositoryInterface as UserRepo;
@@ -19,7 +21,7 @@ class UserController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\Response
      */
-    public function search(Request $request, UserRepo $userRepo)
+    public function searchAuthors(Request $request, UserRepo $userRepo)
     {
         $q = $request->query('q');
         $users = $userRepo->search($q);
@@ -28,7 +30,7 @@ class UserController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the given user.
      *
      * @param string $_POST['username']
      * @param string $_POST['description']
@@ -42,22 +44,12 @@ class UserController extends Controller
         $data = $request->all();
         $user = $AuthUserRepo->user();
 
-        $data['slug'] = str_slug($data['username'] , '-');
-
-        // handling the uploaded photo
         if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
-            $fileName = public_path('storage/users/') . $user->avatar;
-            # delete the previous avatar if exists
-            if ($user->avatar != null && file_exists($fileName)) {
-                unlink($fileName);
-            }
-
-            $avatar = $request->file('avatar');
-            $avatarName = time() . '-' . $avatar->getClientOriginalName();
-            $data['avatar'] = $avatarName;
-            \Image::make($avatar)->fit(300, 300)->save(public_path('storage/users/') . $avatarName);
-
-        } else {
+            $data['avatar'] = UploadingFiles::uploadAvatar(
+                $request->file('avatar'), $user->avatar ?? ''
+            );
+        }
+        else {
             unset($data['avatar']);
         }
 

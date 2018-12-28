@@ -22,13 +22,14 @@ class CategoryController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * get paginated categories with moderators
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request, AuthUserRepo $authUserRepo)
     {
-        $authUserRepo->can('viewCategories', 'App\\Category');
+        $this->authorize('viewCategories', 'App\\Category');
 
         $limit = 10;
         $categories = $this->categoryRepo->getPaginatedCategoriesWithModeratos(
@@ -42,7 +43,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * get paginated posts of the category $slug
+     * get paginated posts of the given category
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  string $slug the slug of the category
@@ -50,7 +51,7 @@ class CategoryController extends Controller
      */
     public function getCategoryPosts(Request $request, string $slug, PostRepo $postRepo, AuthUserRepo $authUserRepo)
     {
-        $authUserRepo->can('viewCategories', '\\App\\Category');
+        $this->authorize('viewCategories', 'App\\Category');
 
         $limit = 8;
         $posts = $postRepo->getPaginatedCategoryPosts(
@@ -66,16 +67,19 @@ class CategoryController extends Controller
     /**
      * create a new category.
      *
+     * @param $_POST['title']
+     * @param $_POST['description']
+     * @param $_POST['moderator']
+     *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(CategoryRequest $request, UserRepo $userRepo)
     {
         $data = $request->all();
-        $data['slug'] = str_slug($request->title , '-');
 
         $category = $this->categoryRepo->create($data);
-        $userRepo->setAsModerator($category->moderator);
+        $userRepo->setAsModeratorIfNotAdmin($category->moderator);
 
         return response()->json([
             'category'  => new CategoryResource($category)
@@ -83,14 +87,14 @@ class CategoryController extends Controller
     }
 
     /**
-     * get the category $slug with the slug.
+     * get the $slug category with its moderator.
      *
      * @param  string $slug
      * @return \Illuminate\Http\Response
      */
     public function show(string $slug, AuthUserRepo $authUserRepo)
     {
-        $authUserRepo->can('viewCategories', 'App\\Category');
+        $this->authorize('viewCategories', 'App\\Category');
 
         $category = $this->categoryRepo->getWithModerator($slug);
 
@@ -100,19 +104,27 @@ class CategoryController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * update the given $slug category also:
+     * - update the privilege of the new moderator if not admin
+     * - set the privilege of the old moderator as regular user if he doesn't
+     * moderate other categories
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param $_POST['title']
+     * @param $_POST['description']
+     * @param $_POST['moderator']
+     *
+     * @param  CategoryRequest  $request
      * @param  string $slug
      * @return \Illuminate\Http\Response
      */
     public function update(CategoryRequest $request, string $slug, UserRepo $userRepo)
     {
         $data = $request->all();
-        $data['slug'] = str_slug($request->title , '-');
 
-        $category = $this->categoryRepo->update($slug, $data);
-        $userRepo->setAsModerator($category->moderator);
+        list($category, $oldModerator) = $this->categoryRepo->update($slug, $data);
+
+        $userRepo->setAsRegularUserIfRequired($oldModerator);
+        $userRepo->setAsModeratorIfNotAdmin($category->moderator);
 
         return response()->json([
             'category'  => new CategoryResource($category)
@@ -120,19 +132,22 @@ class CategoryController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * delete the given $slug category and set the privilege of its moderator
+     * as regular user if he is not an admin or moderate other categories.
      *
-     * @param  string $category
+     * @param  string $slug
      * @return \Illuminate\Http\Response
      */
-    public function destroy(string $category, AuthUserRepo $authUserRepo)
+    public function destroy(string $slug, AuthUserRepo $authUserRepo)
     {
-        $authUserRepo->can('createOrDelete', 'App\\Category');
+        $this->authorize('createOrDelete', 'App\\Category');
 
-        $category = $this->categoryRepo->delete($slug);
+        list($title, $moderator) = $this->categoryRepo->delete($slug);
+
+        $authUserRepo->setAsRegularUserIfRequired($moderator);
 
         return response()->json([
-            'message'   => "'{$category->title}' category has been deleted successfully"
+            'message'   => "'{$title}' category has been deleted successfully"
         ], 200);
     }
 }

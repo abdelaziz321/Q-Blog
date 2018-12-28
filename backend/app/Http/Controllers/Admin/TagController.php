@@ -2,81 +2,99 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Tag;
-use App\Post;
 use Illuminate\Http\Request;
 use App\Http\Resources\TagResource;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\TagRequest;
 use App\Http\Resources\PostRowResource;
+use App\Http\Resources\PaginatedCollection;
+use App\Repositories\Tag\RepositoryInterface as TagRepo;
+use App\Repositories\Post\RepositoryInterface as PostRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
 class TagController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    private $tagRepo;
+
+    public function __construct(TagRepo $tagRepo)
     {
-        $this->authorize('view', Tag::class);
-
-        $tags = Tag::withCount('posts')
-                   ->orderBy('posts_count', 'desc')
-                   ->paginate(10);
-
-        $tags->getCollection()->transform(function ($tag) {
-            return new TagResource($tag);
-        });
-
-        return $tags;
-    }
-
-    public function getTagPosts($slug)
-    {
-        $this->authorize('view', Tag::class);
-
-        $tag = Tag::where('slug', $slug)->firstOrFail();
-        $posts = Post::with(['author', 'category'])
-                     ->withCount(['comments', 'recommendations'])
-                     ->join('post_tag', function ($join) use ($tag) {
-                          $join->on('post_tag.post_id', '=', 'posts.id')
-                               ->where('post_tag.tag_id',  $tag->id);
-                     })
-                     ->orderBy('id', 'desc')
-                     ->paginate(10);
-
-        $posts->getCollection()->transform(function ($post) {
-            return new PostRowResource($post);
-        });
-
-        return $posts;
+        $this->tagRepo = $tagRepo;
     }
 
     /**
-     * Display the specified resource.
+     * get paginated tags with count of posts
      *
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($slug)
+    public function index(Request $request, AuthUserRepo $authUserRepo)
     {
-        $this->authorize('view', Tag::class);
+        $this->authorize('view', 'App\\Tag');
 
-        $tag = Tag::withCount('posts')
-                    ->where('slug', $slug)
-                    ->firstOrFail();
+        $limit = 10;
+        $tags = $this->tagRepo->getPaginatedTags(
+            $limit, $request->query('page', 1)
+        );
+
+        $total = $this->tagRepo->getTotalPaginated();
+
+        # PaginatedCollection(resource, collects, total, per_page)
+        return new PaginatedCollection($tags, 'Tag', $total , $limit);
+    }
+
+    /**
+     * get paginated posts of the given tag
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string $slug the slug of the category
+     * @return \Illuminate\Http\Response
+     */
+    public function getTagPosts(Request $request, string $slug, PostRepo $postRepo, AuthUserRepo $authUserRepo)
+    {
+        $this->authorize('view', 'App\\Tag');
+
+        $limit = 10;
+        $posts = $postRepo->getPaginatedTagPosts(
+            $slug, $limit, $request->query('page', 1)
+        );
+
+        $total = $postRepo->getTotalPaginated();
+
+        # PaginatedCollection(resource, collects, total, per_page)
+        return new PaginatedCollection($posts, 'PostRow', $total , $limit);
+    }
+
+    /**
+     * get the $slug tag with counting the posts associated with it.
+     *
+     * @param  string $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function show(string $slug, AuthUserRepo $authUserRepo)
+    {
+        $this->authorize('view', 'App\\Tag');
+
+        $tag = $this->tagRepo->getWithCountPosts($slug);
 
         return response()->json([
             'tag' => new TagResource($tag)
         ], 200);
     }
 
-    public function update(TagRequest $request, Tag $tag)
+
+    /**
+     * update the given $slug tag
+     *
+     * @param $_POST['name']
+     *
+     * @param  TagRequest $request
+     * @param  string     $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function update(TagRequest $request, string $slug)
     {
-        $tag->name = $request->name;
-        $tag->slug = str_slug($request->name, '-');
-        $tag->save();
+        $data = $request->all();
+
+        $tag = $this->tagRepo->update($slug, $data);
 
         return response()->json([
             'tag' => new TagResource($tag)
@@ -84,19 +102,19 @@ class TagController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * delete the $slug tag
      *
-     * @param  int  $id
+     * @param  string $slug
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Tag $tag)
+    public function destroy(string $slug, AuthUserRepo $authUserRepo)
     {
-        $this->authorize('updateOrDelete', Tag::class);
+        $this->authorize('updateOrDelete', 'App\\Tag');
 
-        $tag->delete();
+        $name = $this->tagRepo->delete($slug);
 
         return response()->json([
-            'message' => "tag '{$tag->name}' has been deleted successfully"
+            'message' => "tag '{$name}' has been deleted successfully"
         ], 200);
     }
 }
