@@ -4,11 +4,11 @@
     <!-- roles select -->
     <div class="form-group">
       <label class="label-form">Role:</label>
-      <select class="form-control" v-model="userForm.role">
+      <select class="form-control" v-model="role">
         <option value="admin">admin</option>
         <option value="author">author</option>
-        <option value="regular user">regular user</option>
-        <option value="banned user">banned user</option>
+        <option value="regular">regular user</option>
+        <option value="banned">banned user</option>
       </select>
     </div>
 
@@ -29,7 +29,8 @@ export default {
 
   data: function () {
     return {
-      userForm: {}
+      userForm: {},
+      role: 'regular'
     };
   },
 
@@ -41,7 +42,31 @@ export default {
 
   methods: {
     save () {
-      this.$store.dispatch('users/assignRole', this.userForm);
+      let user = this.userForm;
+      this.$store.dispatch('users/assignRole', {
+        user: user,
+        role: this.role
+      })
+      .then(() => {
+        this.$store.dispatch('message/update', {
+          title: user.username,
+          body: `${user.username} user has been updated successfully`,
+          class: 'info',
+          confirm: false
+        }, { root: true });
+      })
+      .catch((error) => {
+        let response = error.response;
+
+        // send error message
+        this.$store.dispatch('message/update', {
+          title: user.title,
+          body: response.data.message,
+          itemsErrors: response.data.errors,
+          class: 'danger',
+          confirm: false
+        }, { root: true });
+      });
     }
   }
 

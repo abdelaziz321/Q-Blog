@@ -25,7 +25,7 @@
       <span v-else-if="user.role === 'author'" class="badge badge-warning">
         {{ user.role }}
       </span>
-      <span v-else-if="user.role === 'banned user'" class="badge badge-danger">
+      <span v-else-if="user.role === 'banned'" class="badge badge-danger">
         {{ user.role }}
       </span>
       <span v-else class="badge badge-secondary">
@@ -39,15 +39,35 @@
     <!-- recommendations -->
     <td>{{ user.total_recommendations }}</td>
 
-    <!-- controls -->
+    <!-- controls [assign role, ban|unban, delete] -->
     <td>
       <div class="btn-group btn-group-sm">
-        <button v-if="$gate.allow('assignRole', 'user') && user.role !== 'moderator'" type="button" class="btn btn-primary" @click="assignRole">Role</button>
+        <button 
+          v-if="$gate.allow('assignRole', 'user')"
+          @click="assignRole"
+          type="button"
+          class="btn btn-primary"
+        >Role</button>
 
-        <button v-if="$gate.allow('assignRole', 'user') && user.role === 'banned user'" type="button" class="btn btn-success" @click="unbanUser">Unban</button>
-        <button v-if="$gate.allow('assignRole', 'user') && user.role !== 'banned user'" type="button" class="btn btn-warning" @click="banUser">Ban</button>
+        <button
+          v-if="$gate.allow('assignRole', 'user') && user.role === 'banned'"
+          type="button"
+          class="btn btn-success"
+          @click="unbanUser"
+        >Unban</button>
+        <button
+          v-if="$gate.allow('assignRole', 'user') && user.role !== 'banned'"
+          type="button"
+          class="btn btn-warning"
+          @click="banUser"
+        >Ban</button>
 
-        <button v-if="$gate.allow('delete', 'user', user)" type="button" class="btn btn-danger" @click="deleteUser">Delete</button>
+        <button
+          v-if="$gate.allow('delete', 'user', user)"
+          type="button"
+          class="btn btn-danger"
+          @click="deleteUser"
+        >Delete</button>
       </div>
     </td>
   </tr>
@@ -64,7 +84,7 @@ export default {
 
   computed: {
     avatar: function () {
-      let baseUrl = window.Laravel.baseURL + '/storage/users/';
+      let baseUrl = this.$baseURL + '/storage/users/';
       if (!!this.user.avatar) {
         return baseUrl + this.user.avatar;
       }
@@ -75,11 +95,11 @@ export default {
 
   methods: {
     banUser() {
-      this.$store.dispatch('users/banUser', this.user);
+      this.assignRoleWithAction('banned');
     },
 
     unbanUser() {
-      this.$store.dispatch('users/unbanUser', this.user);
+      this.assignRoleWithAction('regular');
     },
 
     assignRole() {
@@ -91,6 +111,34 @@ export default {
       });
     },
 
+    assignRoleWithAction(role) {
+      let user = this.user;
+      this.$store.dispatch('users/assignRole', {
+        user: user,
+        role: role
+      })
+      .then(() => {
+        this.$store.dispatch('message/update', {
+          title: user.username,
+          body: `${user.username} user has been updated successfully`,
+          class: 'info',
+          confirm: false
+        }, { root: true });
+      })
+      .catch((error) => {
+        let response = error.response;
+
+        // send error message
+        dispatch('message/update', {
+          title: user.title,
+          body: response.data.message,
+          itemsErrors: response.data.errors,
+          class: 'danger',
+          confirm: false
+        }, { root: true });
+      });
+    },
+
     deleteUser() {
       this.$store.dispatch('message/update', {
         title: this.user.username,
@@ -99,9 +147,33 @@ export default {
         confirm: true
       });
 
+      this.$bus.$off('proceed');
       this.$bus.$once('proceed', () => {
-        this.$store.dispatch('users/deleteUser', this.user);
+        this.delete(this.user);
         this.$store.dispatch('message/close');
+      });
+    },
+
+    delete(user) {
+      this.$store.dispatch('users/deleteUser', user)
+      .then((response) => {
+        // send successful message
+        this.$store.dispatch('message/update', {
+          title: user.username,
+          body: response.data.message,
+          class: 'success',
+          confirm: false
+        }, { root: true });
+      })
+      .catch((error) => {
+        // send error message
+        this.$store.dispatch('message/update', {
+          title: user.username,
+          class: 'danger',
+          body: error.response.data.message,
+          errors: error.response.data.errors,
+          confirm: false
+        }, { root: true });
       });
     }
   }

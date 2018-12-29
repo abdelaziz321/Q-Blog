@@ -27,7 +27,7 @@
       <div class="tags">
         <span>tags:</span>
         <ul v-if="typeof post.tags !== 'undefined' && post.tags.length !== 0">
-          <li v-for="tag in post.tags">
+          <li v-for="tag in post.tags" :key="tag.id">
             <router-link class="bg-primary" :to="'/tags/' + tag.slug + '/posts'">
               <font-awesome-icon icon="tag" />
               {{ tag.name }}
@@ -67,6 +67,7 @@
 
       <template v-for="comment in comments">
         <post-comment
+          :key="comment.id"
           :comment="comment"
         ></post-comment>
       </template>
@@ -143,6 +144,7 @@ export default {
         confirm: true
       });
 
+      this.$bus.$off('proceed');
       this.$bus.$once('proceed', () => {
         this.$store.dispatch('posts/deletePost', this.post);
         this.$store.dispatch('message/close');

@@ -37,6 +37,7 @@ export default {
         confirm: true
       });
 
+      this.$bus.$off('proceed');
       this.$bus.$once('proceed', () => {
         this.$store.dispatch('comments/deleteComment', this.comment);
         this.$store.dispatch('message/close');

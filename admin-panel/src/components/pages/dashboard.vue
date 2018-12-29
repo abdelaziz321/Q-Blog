@@ -82,6 +82,7 @@
     </div>
   </div>
 </template>
+
 <script>
 export default {
   data: function () {
@@ -97,13 +98,14 @@ export default {
 
 
   created: function () {
-    axios.get('/admin/dashboard')
-    .then((response) => {
-      let data = response.data;
-      this.dashboard.posts = data.posts;
-      this.dashboard.comments = data.comments;
-      this.dashboard.users = data.users;
-      this.dashboard.views = data.views;
+    this.axios.get('/admin/dashboard')
+      .then((response) => {
+        let data = response.data;
+        
+        this.dashboard.posts = data.posts;
+        this.dashboard.comments = data.comments;
+        this.dashboard.users = data.users;
+        this.dashboard.views = data.views;
     });
   }
 }

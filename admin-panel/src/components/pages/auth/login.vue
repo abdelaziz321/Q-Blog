@@ -1,19 +1,24 @@
 <template>
   <div class="login_page">
+
     <form class="form-signin">
       <h1 class="h4 mb-4 text-center">Login</h1>
       <label for="inputEmail" class="sr-only">Email address</label>
       <input type="email" v-model="email" class="form-control mb-3" placeholder="Email address" required autofocus>
-      <label for="inputPassword" class="sr-only">Password</label>
+
+      <label class="sr-only">Password</label>
       <input type="password" v-model="password" class="form-control mb-3" placeholder="Password" required>
+
       <div class="checkbox mb-2">
         <label style="font-size:0.9em">
           <input type="checkbox" style="vertical-align: text-top" v-model="remember"> Remember me
         </label>
       </div>
+
       <button class="btn btn-primary btn-lg btn-block" type="submit" @click.prevent="login">Sign in</button>
 
       <hr />
+
       <div style="font-size:0.9em" class="text-center mt-1 text-secondary">
         Forgot your password?
         <router-link  class="" to="/register">
@@ -21,6 +26,7 @@
         </router-link>
       </div>
     </form>
+
   </div>
 </template>
 
@@ -33,6 +39,8 @@ export default {
       remember: false
     }
   },
+
+  
   methods: {
     login() {
       let redirect = this.$auth.redirect();

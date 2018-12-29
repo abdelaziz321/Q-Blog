@@ -36,7 +36,29 @@ export default {
 
   methods: {
     save () {
-      this.$store.dispatch('tags/updateTag', this.tagForm);
+      this.$store.dispatch('tags/updateTag', this.tagForm)
+      .then((response) => {
+        // send successful message
+        this.$store.dispatch('message/update', {
+          title: response.data.tag.name,
+          body: `${response.data.tag.name} tag has been updated successfully`,
+          class: 'success',
+          confirm: false
+        }, { root: true });
+
+        $('#modal').modal('hide');
+      })
+      .catch((error) => {
+        let response = error.response;
+        // send error message
+        this.$store.dispatch('message/update', {
+          title: this.tagForm.name,
+          body: response.data.message,
+          itemsErrors: response.data.errors,
+          class: 'danger',
+          confirm: false
+        }, { root: true });
+      });
     }
   }
 

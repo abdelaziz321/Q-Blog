@@ -1,15 +1,8 @@
 import $ from 'jquery';
 window.$ = $;
 
-// ---------------------------------//
-// -  here be dragons, be careful  -//
-// ---------------------------------//
 $(document).ready(function () {
   "use strict";
-  // Configure tooltips for collapsed side navigation
-  // $('.navbar-sidenav [data-toggle="tooltip"]').tooltip({
-  //   template: '<div class="tooltip navbar-sidenav-tooltip" role="tooltip" style="pointer-events: none;"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
-  // });
 
   // Toggle the side navigation
   $("#sidenavToggler").click(function(e) {
@@ -38,7 +31,4 @@ $(document).ready(function () {
     this.scrollTop += (delta < 0 ? 1 : -1) * 30;
     e.preventDefault();
   });
-
-  // Configure tooltips globally
-  // $('[data-toggle="tooltip"]').tooltip('');
 });

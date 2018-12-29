@@ -33,7 +33,7 @@
             <router-link to="/posts/unpublished">Unpublished Posts</router-link>
           </li>
           <li>
-            <router-link :to="'/users/' + user + '/posts'">My Posts</router-link>
+            <router-link :to="'/users/' + userSlug + '/posts'">My Posts</router-link>
           </li>
           <li>
             <router-link to="/posts" exact>All posts</router-link>
@@ -98,7 +98,7 @@
 export default {
   data: function () {
     return {
-      user: window.Laravel.user.slug
+      userSlug: window.$user.slug
     };
   }
 }

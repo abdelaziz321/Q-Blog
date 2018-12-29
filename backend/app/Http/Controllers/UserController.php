@@ -23,7 +23,7 @@ class UserController extends Controller
      */
     public function searchAuthors(Request $request, UserRepo $userRepo)
     {
-        $q = $request->query('q');
+        $q = $request->validate( ['q' => 'required'] )['q'];
         $users = $userRepo->search($q);
 
         return UserSearchResource::collection($users);

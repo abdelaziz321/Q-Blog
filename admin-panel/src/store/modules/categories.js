@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 // initial state
 const state = {
   category: {},
@@ -83,34 +85,13 @@ const actions = {
       moderatorId = category.moderator.id;
     }
 
-    axios.post('/admin/categories', {
+    return axios.post('/admin/categories', {
       title: category.title,
       description: category.description,
       moderator: moderatorId
     })
     .then((response) => {
-      // send successful message
-      dispatch('message/update', {
-        title: category.title,
-        body: `${category.title} category has been added successfully`,
-        class: 'success',
-        confirm: false
-      }, { root: true });
-
       commit('ADD_CATEGORY', response.data.category);
-      $('#modal').modal('hide');
-    })
-    .catch((error) => {
-      let response = error.response;
-
-      // send error message
-      dispatch('message/update', {
-        title: category.title,
-        body: response.data.message,
-        itemsErrors: response.data.errors,
-        class: 'danger',
-        confirm: false
-      }, { root: true });
     });
   },
 
@@ -121,62 +102,25 @@ const actions = {
     if (category.moderator != null) {
       moderatorId = category.moderator.id;
     }
-    axios.post('/admin/categories/' + category.slug, {
+    return axios.post('/admin/categories/' + category.slug, {
       _method: 'PUT',
       title: category.title,
       description: category.description,
       moderator: moderatorId
     })
     .then((response) => {
-      // send successful message
-      dispatch('message/update', {
-        title: category.title,
-        body: `${category.title} category has been updated successfully`,
-        class: 'success',
-        confirm: false
-      }, { root: true });
-
       commit('UPDATE_CATEGORY', response.data.category);
-      $('#modal').modal('hide');
-    })
-    .catch((error) => {
-      let response = error.response;
-
-      // send error message
-      dispatch('message/update', {
-        title: category.title,
-        body: response.data.message,
-        itemsErrors: response.data.errors,
-        class: 'danger',
-        confirm: false
-      }, { root: true });
     });
   },
 
   // =========================================================================
 
   deleteCategory({commit, dispatch}, category) {
-    axios.post('/admin/categories/' + category.slug, {
+    return axios.post('/admin/categories/' + category.slug, {
       '_method': 'DELETE'
     }).then((response) => {
-      // send successful message
-      dispatch('message/update', {
-        title: category.title,
-        body: response.data.message,
-        class: 'success',
-        confirm: false
-      }, { root: true });
-
       commit('DELETE_CATEGORY', category);
-    }).catch((error) => {
-      // send error message
-      dispatch('message/update', {
-        title: category.title,
-        class: 'danger',
-        body: error.response.data.message,
-        errors: error.response.data.errors,
-        confirm: false
-      }, { root: true });
+      return response;
     });
   }
 }

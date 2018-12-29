@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 // initial state
 const state = {
   post: {},
@@ -139,7 +141,7 @@ const actions = {
   // =========================================================================
 
   createPost({commit, dispatch}, post) {
-    let tagsSlugs = post.tags.map((tag) => {
+    let tagsNames = post.tags.map((tag) => {
       return tag.slug;
     });
 
@@ -148,8 +150,8 @@ const actions = {
     formData.append('body', post.body);
     formData.append('caption', post.caption);
     formData.append('category_id', post.category.id);
-    for (var i = 0; i < tagsSlugs.length; i++) {
-        formData.append('tags[]', tagsSlugs[i]);
+    for (var i = 0; i < tagsNames.length; i++) {
+        formData.append('tags[]', tagsNames[i]);
     }
 
     axios.post('/admin/posts', formData, {
@@ -185,7 +187,7 @@ const actions = {
   updatePost ({commit, dispatch}, post) {
     return new Promise((resolve, reject) => {
 
-      let tagsSlugs = post.tags.map((tag) => {
+      let tagsNames = post.tags.map((tag) => {
         return tag.slug;
       });
 
@@ -195,8 +197,8 @@ const actions = {
       formData.append('body', post.body);
       formData.append('caption', post.caption);
       formData.append('category_id', post.category.id);
-      for (var i = 0; i < tagsSlugs.length; i++) {
-          formData.append('tags[]', tagsSlugs[i]);
+      for (var i = 0; i < tagsNames.length; i++) {
+          formData.append('tags[]', tagsNames[i]);
       }
 
       axios.post('/admin/posts/' + post.slug, formData, {
@@ -261,50 +263,32 @@ const actions = {
 
   // =========================================================================
 
-  publish({dispatch, commit}, post) {
-    axios.post('/admin/posts/publish/' + post.slug)
-    .then((response) => {
-      dispatch('message/update', {
-        title: post.title,
-        body: response.data.message,
-        class: 'success',
-        confirm: false
-      }, { root: true });
+  publishing({ dispatch, commit }, payload) {
+    axios.post('/admin/posts/publishing/' + payload.post.slug + '?action=' + payload.action)
+      .then((response) => {
+        dispatch('message/update', {
+          title: post.title,
+          body: response.data.message,
+          class: 'success',
+          confirm: false
+        }, { root: true });
 
-      post.published = 1;
-      post.published_at = 'Just now';
-      commit('SET_POST', post);
-    });
-  },
-
-  // =========================================================================
-
-  unpublish({dispatch, commit}, post) {
-    axios.post('/admin/posts/unpublish/' + post.slug)
-    .then((response) => {
-      dispatch('message/update', {
-        title: post.title,
-        body: response.data.message,
-        class: 'info',
-        confirm: false
-      }, { root: true });
-
-      post.published = 0;
-      post.published_at = null;
-      commit('SET_POST', post);
-    });
+        post.published = 1;
+        post.published_at = 'Just now';
+        commit('SET_POST', post);
+      });
   },
 
   // =========================================================================
 
   assignTags({dispatch, commit}, post) {
-    let tagsSlugs = post.tags.map((tag) => {
+    let tagsNames = post.tags.map((tag) => {
       return tag.slug;
     });
 
     let formData = new FormData();
-    for (var i = 0; i < tagsSlugs.length; i++) {
-        formData.append('tags[]', tagsSlugs[i]);
+    for (var i = 0; i < tagsNames.length; i++) {
+        formData.append('tags[]', tagsNames[i]);
     }
 
     axios.post('/admin/posts/tags/' + post.slug, formData)

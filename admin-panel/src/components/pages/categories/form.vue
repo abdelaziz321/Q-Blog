@@ -23,7 +23,7 @@
         :options-limit="20"
         :max-height="130"
         :loading="isLoading"
-        @search-change="onSearch"
+        @search-change="searchUsers"
         placeholder="select the moderator of the category"
         v-model="categoryForm.moderator"
         label="username"
@@ -58,10 +58,15 @@ export default {
   data: function () {
     return {
       categoryForm: {},
-
-      users: [],
       isLoading: false
     };
+  },
+
+
+  computed: {
+    users: function () {
+      return this.$store.getters['users/usersSearch'];
+    }
   },
 
 
@@ -73,29 +78,80 @@ export default {
 
 
   methods: {
-    onSearch(query) {
+    searchUsers(query) {
       this.isLoading = true;
-      this.search(this, query)
-    },
 
-    search: _.debounce((vm, query) => {
-      axios.get('/admin/users/search?q=' + query)
-      .then((response) => {
-        vm.users = response.data;
-        vm.isLoading = false;
-      })
-      .catch((error) => {
-        console.log(error);
-        vm.isLoading = false;
-      });
-    }, 300),
+      (
+        _.debounce(async (vm, query) => {
+          if (query != '') {
+            await vm.$store.dispatch('users/searchUsers', query);
+          }
+          vm.isLoading = false;
+        }, 300)
+      )(this, query);
+    },
 
     save () {
       if (this.action == 'create') {
-        this.$store.dispatch('categories/createCategory', this.categoryForm);
-      } else if (this.action == 'update') {
-        this.$store.dispatch('categories/updateCategory', this.categoryForm);
+        this.create(this.categoryForm);
       }
+      else if (this.action == 'update') {
+        this.update(this.categoryForm);
+      }
+    },
+
+    create(category) {
+      this.$store.dispatch('categories/createCategory', category)
+      .then(() => {
+        // send successful message
+        this.$store.dispatch('message/update', {
+          title: category.title,
+          body: `${category.title} category has been added successfully`,
+          class: 'success',
+          confirm: false
+        }, { root: true });
+
+        $('#modal').modal('hide');
+      })
+      .catch((error) => {
+        let response = error.response;
+
+        // send error message
+        this.$store.dispatch('message/update', {
+          title: category.title,
+          body: response.data.message,
+          itemsErrors: response.data.errors,
+          class: 'danger',
+          confirm: false
+        }, { root: true });
+      });
+    },
+
+    update(category) {
+      this.$store.dispatch('categories/updateCategory', category)
+      .then(() => {
+        // send successful message
+        this.$store.dispatch('message/update', {
+          title: category.title,
+          body: `${category.title} category has been updated successfully`,
+          class: 'success',
+          confirm: false
+        }, { root: true });
+
+        $('#modal').modal('hide');
+      })
+      .catch((error) => {
+        let response = error.response;
+
+        // send error message
+        this.$store.dispatch('message/update', {
+          title: category.title,
+          body: response.data.message,
+          itemsErrors: response.data.errors,
+          class: 'danger',
+          confirm: false
+        }, { root: true });
+      });
     }
   }
 

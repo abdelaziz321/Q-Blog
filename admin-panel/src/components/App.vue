@@ -36,8 +36,8 @@
 <script>
 export default {
   created: function () {
-    window.Laravel.user = this.$auth.user();
-    this.$gate.setUser(this.$auth.user());
+    window.$user = this.$auth.user();
+    this.$gate.setUser(window.$user);
   }
 }
 </script>

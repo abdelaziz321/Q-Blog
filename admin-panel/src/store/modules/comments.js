@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 // initial state
 const state = {
   comments: {},
@@ -60,23 +62,9 @@ const actions = {
   deleteComment({commit, dispatch}, comment) {
     axios.post('/admin/comments/' + comment.id, {
       '_method': 'DELETE'
-    }).then((response) => {
-      // send successful message
-      dispatch('message/update', {
-        body: response.data.message,
-        class: 'success',
-        confirm: false
-      }, { root: true });
-
+    }).then((response) => {    
       commit('DELETE_COMMENT', comment);
-    }).catch((error) => {
-      // send error message
-      dispatch('message/update', {
-        class: 'danger',
-        body: error.response.data.message,
-        errors: error.response.data.errors,
-        confirm: false
-      }, { root: true });
+      return response;
     });
   }
 }

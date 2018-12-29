@@ -1,6 +1,12 @@
 <template>
   <div>
-    <button v-if="$gate.allow('create', 'category')" type="button" class="btn btn-primary mb-3 float-right" @click="createCategory">Add Category</button>
+    <button 
+      v-if="$gate.allow('create', 'category')" 
+      @click="createCategory"
+      type="button" 
+      class="btn btn-primary mb-3 float-right" 
+    >Add Category</button>
+    
     <div class="table-responsive">
       <table class="table table-striped table-light table-bordered table-hover text-center" id="dataTable" width="100%" cellspacing="0">
         <thead>

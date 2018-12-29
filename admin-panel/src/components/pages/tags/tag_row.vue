@@ -47,9 +47,33 @@ export default {
         confirm: true
       });
 
+      this.$bus.$off('proceed');
       this.$bus.$once('proceed', () => {
-        this.$store.dispatch('tags/deleteTag', this.tag);
+        this.delete(this.tag);
         this.$store.dispatch('message/close');
+      });
+    },
+
+    delete(tag) {
+      this.$store.dispatch('tags/deleteTag', tag)
+      .then((response) => {
+        // send successful message
+        this.$store.dispatch('message/update', {
+          title: tag.title,
+          body: response.data.message,
+          class: 'success',
+          confirm: false
+        }, { root: true });
+      })
+      .catch((error) => {
+        // send error message
+        this.$store.dispatch('message/update', {
+          title: tag.name,
+          class: 'danger',
+          body: error.response.data.message,
+          errors: error.response.data.errors,
+          confirm: false
+        }, { root: true });
       });
     }
   }

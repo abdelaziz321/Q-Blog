@@ -159,7 +159,7 @@ class UserController extends Controller
      */
     public function search(Request $request)
     {
-        $q = $request->query('q');
+        $q = $request->validate( ['q' => 'required'] )['q'];
         $users = $this->authUserRepo->search($q);
 
         return UserSearchResource::collection($users);

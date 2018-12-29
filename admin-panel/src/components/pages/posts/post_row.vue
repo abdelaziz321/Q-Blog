@@ -74,6 +74,7 @@ export default {
         confirm: true
       });
 
+      this.$bus.$off('proceed');
       this.$bus.$once('proceed', () => {
         this.$store.dispatch('posts/deletePost', this.post);
         this.$store.dispatch('message/close');

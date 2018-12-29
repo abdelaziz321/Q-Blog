@@ -14,8 +14,18 @@
     <!-- controls -->
     <td>
       <div class="btn-group btn-group-sm">
-        <button v-if="$gate.allow('update', 'category', category)" type="button" class="btn btn-success" @click="updateCategory">Update</button>
-        <button v-if="$gate.allow('delete', 'category')" type="button" class="btn btn-danger" @click="deleteCategory">Delete</button>
+        <button
+          v-if="$gate.allow('update', 'category', category)"
+          @click="updateCategory"
+          type="button"
+          class="btn btn-success"
+        >Update</button>
+        <button
+          v-if="$gate.allow('delete', 'category')"
+          @click="deleteCategory"
+          type="button"
+          class="btn btn-danger"
+        >Delete</button>
       </div>
     </td>
   </tr>
@@ -68,9 +78,34 @@ export default {
         confirm: true
       });
 
+      this.$bus.$off('proceed');
       this.$bus.$once('proceed', () => {
-        this.$store.dispatch('categories/deleteCategory', this.category);
+        this.delete(this.category);
         this.$store.dispatch('message/close');
+      });
+    },
+
+    delete(category) {
+      this.$store.dispatch('categories/deleteCategory', category)
+      .then((response) => {
+        // send successful message
+        this.$store.dispatch('message/update', {
+          title: category.title,
+          body: response.data.message,
+          class: 'success',
+          confirm: false
+        }, { root: true });
+      })
+      .catch((error) => {
+        let response = error.response;
+        // send error message
+        this.$store.dispatch('message/update', {
+          title: category.title,
+          class: 'danger',
+          body: response.data.message,
+          errors: response.data.errors,
+          confirm: false
+        }, { root: true });
       });
     }
   }

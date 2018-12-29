@@ -1,9 +1,11 @@
+import axios from 'axios';
+
 // initial state
 const state = {
   user: {},
-
   users: [],
-  totalPages: 0
+  totalPages: 0,
+  usersSearch: []
 }
 
 // getters
@@ -16,6 +18,9 @@ const getters = {
   },
   totalPages: (state) => {
     return state.totalPages;
+  },
+  usersSearch: (state) => {
+    return state.usersSearch;
   }
 }
 
@@ -27,6 +32,10 @@ const mutations = {
 
   SET_USERS(state, users) {
     state.users = users;
+  },
+
+  SET_USERS_SEARCH(state, users) {
+    state.usersSearch = users;
   },
 
   SET_TOTAL_PAGES(state, totalPages) {
@@ -77,6 +86,15 @@ const actions = {
 
   // =========================================================================
 
+  searchUsers({commit}, query) {
+    return axios.get('/admin/users/search?q=' + query)
+      .then((response) => {
+        commit('SET_USERS_SEARCH', response.data);
+      });
+  },
+
+  // =========================================================================
+
   getUser({commit}, user) {
     axios.get('/admin/users/' + user)
     .then((response) => {
@@ -86,76 +104,13 @@ const actions = {
 
   // =========================================================================
 
-  banUser({dispatch, commit}, user) {
-    axios.post('/admin/users/ban/' + user.slug)
-    .then((response) => {
-      dispatch('message/update', {
-        title: user.username,
-        body: `${user.username} user has been banned`,
-        class: 'info',
-        confirm: false
-      }, { root: true });
-
-      user.role = 'banned user';
-      commit('UPDATE_USER', user);
-    })
-    .catch((error) => {
-      let response = error.response;
-      // send error message
-      dispatch('message/update', {
-        title: user.username,
-        body: response.data.message,
-        itemsErrors: response.data.errors,
-        class: 'danger',
-        confirm: false
-      }, { root: true });
-    });
-  },
-
-  // =========================================================================
-
-  unbanUser({dispatch, commit}, user) {
-    axios.post('/admin/users/unban/' + user.slug)
-    .then((response) => {
-      dispatch('message/update', {
-        title: user.username,
-        body: `${user.username} user has been unbanned successfully`,
-        class: 'success',
-        confirm: false
-      }, { root: true });
-    });
-
-    user.role = 'regular user';
-    commit('UPDATE_USER', user);
-  },
-
-  // =========================================================================
-
-  assignRole({dispatch, commit}, user) {
-    axios.post('/admin/users/assign-role/' + user.slug, {
-      role: user.role
+  assignRole({dispatch, commit}, payload) {
+    axios.post('/admin/users/' + payload.user.slug + '/assign-role', {
+      role: payload.role
     })
     .then((response) => {
-      dispatch('message/update', {
-        title: user.username,
-        body: `${user.username} user has been updated successfully`,
-        class: 'info',
-        confirm: false
-      }, { root: true });
-
-      commit('UPDATE_USER', user);
-    })
-    .catch((error) => {
-      let response = error.response;
-
-      // send error message
-      dispatch('message/update', {
-        title: user.title,
-        body: response.data.message,
-        itemsErrors: response.data.errors,
-        class: 'danger',
-        confirm: false
-      }, { root: true });
+      payload.user.role = payload.role;
+      commit('UPDATE_USER', payload.user);
     });
   },
 
@@ -164,25 +119,10 @@ const actions = {
   deleteUser({dispatch, commit}, user) {
     axios.post('/admin/users/' + user.slug, {
       '_method': 'DELETE'
-    }).then((response) => {
-      // send successful message
-      dispatch('message/update', {
-        title: user.username,
-        body: response.data.message,
-        class: 'success',
-        confirm: false
-      }, { root: true });
-
+    })
+    .then((response) => {
       commit('DELETE_USER', user);
-    }).catch((error) => {
-      // send error message
-      dispatch('message/update', {
-        title: user.username,
-        class: 'danger',
-        body: error.response.data.message,
-        errors: error.response.data.errors,
-        confirm: false
-      }, { root: true });
+      return response;
     });
   }
 }

@@ -41,7 +41,7 @@ class HomeController extends Controller
      */
     public function searchCategories(Request $request, CategoryRepo $categoryRepo)
     {
-        $q = $request->query('q');
+        $q = $request->validate( ['q' => 'required'] )['q'];
         $categories = $categoryRepo->search($q);
 
         return CategorySearchResource::collection($categories);
@@ -57,7 +57,7 @@ class HomeController extends Controller
      */
     public function searchTags(Request $request, TagRepo $tagRepo)
     {
-        $q = $request->query('q');
+        $q = $request->validate( ['q' => 'required'] )['q'];
         $tags = $tagRepo->search($q);
 
         return TagResource::collection($tags);

@@ -22,7 +22,7 @@
           </tr>
           <tr>
             <td><strong>Role</strong></td>
-            <td>{{ user.role }}</td>
+            <td><span class="badge badge-primary">{{ user.role }}</span></td>
           </tr>
           <tr v-if="typeof user.role !== 'undefined'  && user.role.indexOf('user') === -1">
             <td><strong>Total Posts</strong></td>
@@ -84,7 +84,7 @@ export default {
       return this.$store.getters['posts/totalPages'];
     },
     avatar: function () {
-      let baseUrl = window.Laravel.baseURL + '/storage/users/';
+      let baseUrl = this.$baseURL + '/storage/users/';
       if (!!this.user.avatar) {
         return baseUrl + this.user.avatar;
       }

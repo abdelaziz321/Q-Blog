@@ -14,9 +14,9 @@
       <p>
         <strong>{{ message.body }}</strong>
         <ul>
-          <li v-for="(errors, item) in message.itemsErrors">
+          <li v-for="(errors, item) in message.itemsErrors" :key="errors">
             <u>{{ item }}</u> :
-            <ul v-for="error in errors">
+            <ul v-for="error in errors" :key="error">
               {{ error }}
             </ul>
           </li>

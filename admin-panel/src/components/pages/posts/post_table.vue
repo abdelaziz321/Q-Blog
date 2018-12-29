@@ -65,8 +65,7 @@ export default {
     currentPage: {
       get: function () {
         return  this.page;
-      },
-      set: function (newValue) {}
+      }
     }
   },
 
