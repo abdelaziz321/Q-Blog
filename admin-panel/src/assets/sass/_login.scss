@@ -6,27 +6,52 @@
   width: 100vw;
   display: flex;
   justify-content: center;
+  flex-direction: column;
   align-items: center;
   background-color: $gray-800;
-  background: linear-gradient(110deg, $gray-800 0%, $gray-800 18%, #2d71a8 20%, $gray-800 20%, $gray-800 75%, #2d71a8 80%, $gray-800 80%, #2d71a8 100% );
+  background: linear-gradient(110deg,
+    $gray-800 0%, $gray-800 18%, #2d71a8 20%, 
+    $gray-800 20%, $gray-800 75%, #2d71a8 80%,
+    $gray-800 80%, #2d71a8 100%
+  );
+
+  > h2 {
+    font-size: 1.7em;
+    margin-bottom: 0;
+    padding: 15px 30px 15px 30px;
+    letter-spacing: 1px;
+    border-radius: 5px 5px 0 0;
+    color: rgba(255,255,255,0.8);
+    background-color: rgba(0,0,0,0.1);
+    text-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+    box-shadow: 0 0 1px;
+
+    > span {
+      font-size: 0.4em;
+      color: #96d5f8;
+      font-weight: 900;
+      text-shadow: 2px 2px 1px rgba(0, 0, 0, 0.3);
+    }
+  }
 
   form {
     color: $gray-800;
     width: 360px;
     background-color: #f6f6f6;
-    padding: 40px 15px 25px 15px;
+    padding: 35px 15px 25px 15px;
     box-shadow: 5px 7px 0px rgba(0,0,0,0.2);
     border: 1px solid $gray-800;
 
-    h1 {
+    > h4 {
       letter-spacing: 1px;
+      font-weight: 900;
     }
 
     .form-control {
       border: 1px solid rgba(0,0,0,0.08);
 
       &:focus {
-        border-color: rgba(0,0,0,0.25)
+        border-color: rgba(0,0,0,0.2)
       }
     }
   }

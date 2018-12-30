@@ -14,7 +14,7 @@
       <p>
         <strong>{{ message.body }}</strong>
         <ul>
-          <li v-for="(errors, item) in message.itemsErrors" :key="errors">
+          <li v-for="(errors, item) in message.itemsErrors" :key="item">
             <u>{{ item }}</u> :
             <ul v-for="error in errors" :key="error">
               {{ error }}
@@ -22,7 +22,13 @@
           </li>
         </ul>
       </p>
-      <button v-if="message.confirm" @click="proceed" class="btn btn-sm" :class="[{'disabled': message.waiting}, btnclass]">
+      
+      <button 
+        v-if="message.confirm"
+        @click="proceed"
+        class="btn btn-sm"
+        :class="[{'disabled': message.waiting}, btnclass]"
+      >
         <template v-if="message.waiting">
           <font-awesome-icon icon="spinner" pulse />
         </template>
@@ -30,6 +36,7 @@
           proceed
         </template>
       </button>
+
       <span class="clearfix"></span>
     </div>
   </div>

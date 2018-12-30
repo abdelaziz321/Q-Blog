@@ -44,7 +44,7 @@
       <div class="btn-group btn-group-sm">
         <button 
           v-if="$gate.allow('assignRole', 'user')"
-          @click="assignRole"
+          @click="assignRoleForm()"
           type="button"
           class="btn btn-primary"
         >Role</button>
@@ -53,13 +53,13 @@
           v-if="$gate.allow('assignRole', 'user') && user.role === 'banned'"
           type="button"
           class="btn btn-success"
-          @click="unbanUser"
+          @click="assignRole('regular')"
         >Unban</button>
         <button
           v-if="$gate.allow('assignRole', 'user') && user.role !== 'banned'"
           type="button"
           class="btn btn-warning"
-          @click="banUser"
+          @click="assignRole('banned')"
         >Ban</button>
 
         <button
@@ -94,15 +94,7 @@ export default {
 
 
   methods: {
-    banUser() {
-      this.assignRoleWithAction('banned');
-    },
-
-    unbanUser() {
-      this.assignRoleWithAction('regular');
-    },
-
-    assignRole() {
+    assignRoleForm() {
       this.$store.dispatch('modal/update', {
         action: 'update',
         formData: this.user,
@@ -111,7 +103,7 @@ export default {
       });
     },
 
-    assignRoleWithAction(role) {
+    assignRole(role) {
       let user = this.user;
       this.$store.dispatch('users/assignRole', {
         user: user,

@@ -81,14 +81,14 @@ export default {
     searchUsers(query) {
       this.isLoading = true;
 
-      (
-        _.debounce(async (vm, query) => {
+      (_.debounce(
+        async function (vm, query) {
           if (query != '') {
             await vm.$store.dispatch('users/searchUsers', query);
           }
           vm.isLoading = false;
-        }, 300)
-      )(this, query);
+        }
+      , 300))(this, query);
     },
 
     save () {

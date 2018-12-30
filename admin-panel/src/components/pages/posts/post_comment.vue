@@ -24,7 +24,7 @@ export default {
 
   data: function () {
     return {
-      usersPath: window.Laravel.baseURL + '/storage/users/'
+      usersPath: this.$baseURL + '/storage/users/'
     };
   },
 

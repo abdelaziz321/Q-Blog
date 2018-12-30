@@ -8,10 +8,16 @@
     </td>
 
     <td>{{ description }}</td>
-    <td>{{ moderator }}</td>
+
+    <!-- moderator -->
+    <td v-if="moderator === 'unknown'"><span class="badge badge-danger">{{ moderator }}</span></td>
+    <td v-else>
+      <router-link :to="'/users/' + moderator.slug + '/posts'">{{ moderator.username }}</router-link>
+    </td>
+
     <td>{{ category.total_posts }}</td>
 
-    <!-- controls -->
+    <!-- controls [update, delete] -->
     <td>
       <div class="btn-group btn-group-sm">
         <button
@@ -20,6 +26,7 @@
           type="button"
           class="btn btn-success"
         >Update</button>
+
         <button
           v-if="$gate.allow('delete', 'category')"
           @click="deleteCategory"
@@ -45,8 +52,9 @@ export default {
       if (typeof this.category.moderator === 'undefined') {
         return 'unknown';
       }
-      return this.category.moderator.username;
+      return this.category.moderator;
     },
+    
     description: function () {
       if (typeof this.category.description === 'undefined') {
         return '';

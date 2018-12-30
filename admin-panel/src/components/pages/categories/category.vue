@@ -11,7 +11,10 @@
       </tr>
       <tr>
         <td><strong>Moderator</strong></td>
-        <td>{{ moderator }}</td>
+        <td v-if="moderator === 'unknown'"><span class="badge badge-danger">{{ moderator }}</span></td>
+        <td v-else>
+          <router-link :to="'/users/' + moderator.slug + '/posts'">{{ moderator.username }}</router-link>
+        </td>
       </tr>
       <tr>
         <td><strong>Total Posts</strong></td>
@@ -51,15 +54,18 @@ export default {
     category: function () {
       return this.$store.getters['categories/category'];
     },
+
     moderator: function () {
       if (typeof this.category.moderator === 'undefined') {
         return 'unknown';
       }
-      return this.category.moderator.username;
+      return this.category.moderator;
     },
+
     posts: function () {
       return this.$store.getters['posts/posts'];
     },
+    
     totalPages: function () {
       return this.$store.getters['posts/totalPages'];
     }

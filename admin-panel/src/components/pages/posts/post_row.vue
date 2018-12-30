@@ -36,11 +36,20 @@
       >{{ post.category.title }}</router-link>
     </td>
 
-    <!-- controls -->
+    <!-- controls [Update, Delete] -->
     <td>
       <div v-if="typeof post.author !== 'undefined'" class="btn-group btn-group-sm">
-        <router-link v-if="$gate.allow('update', 'post', post)" class="btn btn-success" :to="'/posts/update-post/' + this.post.slug">Update</router-link>
-        <button v-if="$gate.allow('delete', 'post', post)" type="button" class="btn btn-danger" @click="deletePost">Delete</button>
+        <router-link
+          v-if="$gate.allow('update', 'post', post)" 
+          :to="'/posts/update-post/' + this.post.slug"
+          class="btn btn-success" 
+        >Update</router-link>
+        <button 
+          v-if="$gate.allow('delete', 'post', post)"
+          @click="deletePost"
+          type="button"
+          class="btn btn-danger"
+        >Delete</button>
       </div>
     </td>
   </tr>

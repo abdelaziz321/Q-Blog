@@ -5,21 +5,23 @@
     <div class="form-group">
       <label class="label-form">Tags:</label>
       <multiselect
+        v-model="postForm.tags"
+        @search-change="searchTags"
         :options="tags"
-        :internal-search="false"
-        :options-limit="20"
-        :max-height="130"
-        :close-on-select="false"
-        :limit="3"
-        :multiple="true"
         :limit-text="limitTextTags"
         :loading="isLoadingTag"
-        :max="7"
-        @search-change="onSearchTags"
-        placeholder="select the tags of the posts"
-        v-model="postForm.tags"
+        @tag="addTag"
         label="name"
         track-by="id"
+        :max="7"
+        :limit="3"
+        :taggable="true"
+        :multiple="true"
+        :max-height="130"
+        :options-limit="20"
+        :internal-search="false"
+        :close-on-select="false"
+        placeholder="select the tags of the posts"
       >
       </multiselect>
     </div>
@@ -49,10 +51,14 @@ export default {
   data: function () {
     return {
       postForm: {},
-
-      tags: [],
       isLoadingTag: false
     };
+  },
+
+  computed: {
+    tags: function () {
+      return this.$store.getters['tags/tagsSearch'];
+    }
   },
 
 
@@ -62,31 +68,42 @@ export default {
 
 
   methods: {
-    save () {
-      this.$store.dispatch('posts/assignTags', this.postForm);
-    },
+    searchTags(query) {
+      this.isLoading = true;
 
-    // search for tags <multiselect>
-    onSearchTags(query) {
-      this.isLoadingTag = true;
-      this.searchTags(this, query)
+      (_.debounce(
+        async function (vm, query) {
+          if (query != '') {
+            await vm.$store.dispatch('tags/searchTags', query);
+          }
+          vm.isLoading = false;
+        }
+      , 300))(this, query);
     },
-
-    searchTags: _.debounce((vm, query) => {
-      axios.get('/tags/search?q=' + query)
-      .then((response) => {
-        vm.tags = response.data;
-        vm.isLoadingTag = false;
-      })
-      .catch((error) => {
-        console.log(error);
-        vm.isLoadingTag = false;
-      });
-    }, 300),
 
     limitTextTags(count) {
       return `and ${count} other tags`
     },
+
+    addTag (newTag) {
+      const tag = {
+        name: newTag,
+        id: newTag.substring(0, 2) + Math.floor((Math.random() * 10000000))
+      }
+      this.postForm.tags.push(tag);
+    },
+
+    save () {
+      this.$store.dispatch('posts/assignTags', this.postForm)
+      .then(() => {
+        this.$store.dispatch('message/update', {
+          title: this.postForm.title,
+          body: 'post\'s tags have been updated successfully',
+          class: 'success',
+          confirm: false
+        }, { root: true });
+      });
+    }
   }
 }
 </script>

@@ -4,8 +4,8 @@ import axios from 'axios';
 const state = {
   user: {},
   users: [],
+  usersSearch: [],
   totalPages: 0,
-  usersSearch: []
 }
 
 // getters

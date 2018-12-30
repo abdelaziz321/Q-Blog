@@ -88,14 +88,9 @@ const actions = {
   // =========================================================================
 
   getPost({commit}, post) {
-    return new Promise((resolve, reject) => {
-      axios.get('/admin/posts/' + post)
-      .then((response) => {
-        commit('SET_POST', response.data.post);
-        resolve();
-      }).catch(() => {
-        reject();
-      });
+    return axios.get('/admin/posts/' + post)
+    .then((response) => {
+      commit('SET_POST', response.data.post);
     });
   },
 
@@ -142,7 +137,7 @@ const actions = {
 
   createPost({commit, dispatch}, post) {
     let tagsNames = post.tags.map((tag) => {
-      return tag.slug;
+      return tag.name;
     });
 
     let formData = new FormData();
@@ -188,7 +183,7 @@ const actions = {
     return new Promise((resolve, reject) => {
 
       let tagsNames = post.tags.map((tag) => {
-        return tag.slug;
+        return tag.name;
       });
 
       let formData = new FormData();
@@ -264,18 +259,21 @@ const actions = {
   // =========================================================================
 
   publishing({ dispatch, commit }, payload) {
-    axios.post('/admin/posts/publishing/' + payload.post.slug + '?action=' + payload.action)
+    return axios.post('/admin/posts/' + payload.post.slug + '/publishing?action=' + payload.action)
       .then((response) => {
-        dispatch('message/update', {
-          title: post.title,
-          body: response.data.message,
-          class: 'success',
-          confirm: false
-        }, { root: true });
+        switch (payload.action) {
+          case 'publish':
+            payload.post.published = 1;
+            payload.post.published_at = 'Just now';
+            break;
+          case 'unpublish':
+            payload.post.published = 0;
+            payload.post.published_at = '';
+            break;
+        }
 
-        post.published = 1;
-        post.published_at = 'Just now';
-        commit('SET_POST', post);
+        commit('SET_POST', payload.post);
+        return response;
       });
   },
 
@@ -283,7 +281,7 @@ const actions = {
 
   assignTags({dispatch, commit}, post) {
     let tagsNames = post.tags.map((tag) => {
-      return tag.slug;
+      return tag.name;
     });
 
     let formData = new FormData();
@@ -291,15 +289,8 @@ const actions = {
         formData.append('tags[]', tagsNames[i]);
     }
 
-    axios.post('/admin/posts/tags/' + post.slug, formData)
+    return axios.post('/admin/posts/' + post.slug + '/assign-tags', formData)
     .then((response) => {
-      dispatch('message/update', {
-        title: post.title,
-        body: 'post\'s tags have been updated successfully',
-        class: 'success',
-        confirm: false
-      }, { root: true });
-
       commit('SET_POST', response.data.post);
     });
   }

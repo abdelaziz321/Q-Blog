@@ -1,8 +1,9 @@
 <template>
   <div class="login_page">
-
+    <h2 class="text-center">Q-Blog <span>Admin Panel</span></h2>
     <form class="form-signin">
-      <h1 class="h4 mb-4 text-center">Login</h1>
+      <h4 class="h4 mb-4 text-center">Login</h4>
+
       <label for="inputEmail" class="sr-only">Email address</label>
       <input type="email" v-model="email" class="form-control mb-3" placeholder="Email address" required autofocus>
 

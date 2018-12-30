@@ -6,7 +6,7 @@
       <!-- title -->
       <h3 class="float-left">{{ post.title }}</h3>
 
-      <!-- buttons -->
+      <!-- buttons [Update, publish|unpublish , delete] -->
       <div v-if="typeof post.author !== 'undefined'" class="btn-group float-right" role="group" aria-label="Basic example">
         <router-link
           v-if="$gate.allow('update', 'post', post)"
@@ -15,12 +15,28 @@
         >Update</router-link>
 
         <template v-if="$gate.allow('publish', 'post', post)">
-          <button v-if="post.published == 0" type="button" class="btn btn-info btn-sm" @click="publishPost">publish</button>
-          <button v-else type="button" class="btn btn-warning btn-sm" @click="unpublishPost">unpublish</button>
+          <button 
+            v-if="post.published == 0"
+            @click="publishing('publish')"
+            type="button"
+            class="btn btn-info btn-sm"
+          >publish</button>
+          <button 
+            v-else
+            @click="publishing('unpublish')"
+            type="button"
+            class="btn btn-warning btn-sm"
+          >unpublish</button>
         </template>
 
-        <button v-if="$gate.allow('delete', 'post', post)" type="button" class="btn btn-danger" @click="deletePost">delete</button>
+        <button 
+          v-if="$gate.allow('delete', 'post', post)"
+          @click="deletePost"
+          type="button"
+          class="btn btn-danger"
+        >delete</button>
       </div>
+
       <span class="clearfix d-block mb-3"></span>
 
       <!-- tags -->
@@ -34,7 +50,11 @@
             </router-link>
           </li>
         </ul>
-        <a v-if="$gate.allow('assignTags', 'post', post)" class="ml-3" href="#" @click.prevent="assignTags">reassign tags...</a>
+        <a v-if="$gate.allow('assignTags', 'post', post)"
+          @click.prevent="assignTags"
+          class="ml-3"
+          href="#"
+        >reassign tags...</a>
       </div>
     </div>
 
@@ -58,7 +78,7 @@
         <img class="img-fluid" :src="caption" alt="post_caption">
         <hr>
       </div>
-      <p v-html="post.body"></p>
+      <p v-html="body"></p>
     </div>
     <hr>
 
@@ -98,6 +118,7 @@
 
         </div>
       </div> -->
+
     </div>
 
   </div>
@@ -122,9 +143,16 @@ export default {
     },
     caption: function () {
       if (!!this.post.caption) {
-        return window.Laravel.baseURL + '/storage/posts/' + this.post.caption;
+        return this.$baseURL + '/storage/posts/captions/' + this.post.caption;
       }
       return 0;
+    },
+    body: function () {
+      if (!!this.post.body) {
+        return this.post.body.replace(/posts\/images\/.*\.png/g, (imagePath) => {
+          return this.$baseURL + '/storage/' +  imagePath;
+        });
+      }
     }
   },
 
@@ -152,12 +180,18 @@ export default {
       });
     },
 
-    publishPost() {
-      this.$store.dispatch('posts/publish', this.post);
-    },
-
-    unpublishPost() {
-      this.$store.dispatch('posts/unpublish', this.post);
+    publishing(action) {
+      this.$store.dispatch('posts/publishing', {
+        post: this.post,
+        action: action
+      }).then((response) => {
+        this.$store.dispatch('message/update', {
+          title: this.post.title,
+          body: response.data.message,
+          class: 'success',
+          confirm: false
+        }, { root: true });
+      });
     },
 
     assignTags() {

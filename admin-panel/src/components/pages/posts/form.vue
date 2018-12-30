@@ -66,7 +66,7 @@
       <!-- body input -->
       <div class="form-group">
         <label class="label-form" for="describtion">Body:</label>
-        <wysiwyg v-model="postForm.body" />
+        <wysiwyg v-model="body" />
       </div>
 
       <div class="text-right">
@@ -93,19 +93,30 @@ export default {
       isLoadingCategory: false,
 
       tags: [],
-      isLoadingTag: false,
-
-      postForm: {}
+      isLoadingTag: false
     };
   },
+
+
+  computed: {
+    postForm: function () {
+      return this.$store.getters['posts/post'];
+    },
+
+    body: function () {
+      if (!!this.postForm.body) {
+        return this.postForm.body.replace(/posts\/images\/.*\.png/g, (imagePath) => {
+          return this.$baseURL + '/storage/' +  imagePath;
+        });
+      }
+    }
+  },
+
 
   created: function () {
     if (typeof this.$route.params.post !== 'undefined') { // update form
       this.formHeader = 'Update Post';
       this.$store.dispatch('posts/getPost', this.$route.params.post)
-      .then(() => {
-        this.postForm = this.$store.getters['posts/post'];
-      })
       .catch(() => {
         this.$store.dispatch('message/update', {
           title: this.$route.params.post,

@@ -3,6 +3,7 @@ import axios from 'axios';
 // initial state
 const state = {
   tags: {},
+  tagsSearch: [],
   totalPages: 0
 }
 
@@ -13,6 +14,9 @@ const getters = {
   },
   totalPages: (state) => {
     return state.totalPages;
+  },
+  tagsSearch: (state) => {
+    return state.tagsSearch;
   }
 }
 
@@ -20,6 +24,10 @@ const getters = {
 const mutations = {
   SET_TAGS(state, tags) {
     state.tags = tags;
+  },
+
+  SET_TAGS_SEARCH(state, tags) {
+    state.tagsSearch = tags;
   },
 
   SET_TOTAL_PAGES(state, totalPages) {
@@ -55,6 +63,15 @@ const actions = {
       let totalPages = Math.ceil(res.total / res.per_page);
       commit('SET_TOTAL_PAGES', totalPages);
     });
+  },
+
+  // =========================================================================
+
+  searchTags({ commit }, query) {
+    return axios.get('/tags/search?q=' + query)
+      .then((response) => {
+        commit('SET_TAGS_SEARCH', response.data);
+      });
   },
 
   // =========================================================================
