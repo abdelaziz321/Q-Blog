@@ -267,7 +267,7 @@ class Repository extends BaseRepository implements RepositoryInterface
         if (isset($data['caption'])) {
             $post->caption = $data['caption'];
         }
-        
+
         $post->save();
 
         return $post;

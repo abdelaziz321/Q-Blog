@@ -17,7 +17,7 @@ class PaginatedCollection extends ResourceCollection
         $this->perPage = $perPage;
         $this->collects = 'App\\Http\\Resources\\' . $collects . 'Resource';
 
-        parent::__construct($resource);
+        parent::__construct($resource->values());
     }
 
     /**

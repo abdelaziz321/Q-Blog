@@ -185,7 +185,7 @@ class PostController extends Controller
 
         $oldTagsIds = $this->postRepo->getPostTagsIds($post->id);
 
-        UploadingFiles::removeCaption($post->caption);
+        UploadingFiles::removeCaption($post->caption ?? '');
         UploadingFiles::removeBodyImages($post->body);
 
         $this->postRepo->delete($post->id);
