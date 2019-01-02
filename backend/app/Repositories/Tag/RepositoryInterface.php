@@ -28,7 +28,7 @@ interface RepositoryInterface
      * @param  string $slug
      * @return \stdClass
      */
-    public function getWithCountPosts(string $slug)
+    public function getWithCountPosts(string $slug);
 
     /**
      * update the given $slug tag
