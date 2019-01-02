@@ -71,7 +71,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      * get the comment of the given id with count the votes
      *
      * @param  int    $id the id of the comment
-     * @return \App\Comment
+     * @return \stdClass
      */
     public function getCommentWithVotes(int $id)
     {
@@ -92,7 +92,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      * create a new comment
      *
      * @param  array $data consists of {body, post_id}
-     * @return \App\Comment
+     * @return \stdClass
      */
     public function create($data)
     {
@@ -114,7 +114,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      *
      * @param  int $id the id of the comment
      * @param  string $body
-     * @return void
+     * @return \stdClass
      */
     public function update($id, $body)
     {

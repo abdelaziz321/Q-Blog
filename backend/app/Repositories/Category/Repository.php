@@ -50,7 +50,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      * get the $slug category with the moderator of this category
      *
      * @param  string $slug
-     * @return \App\Category
+     * @return \stdClass
      */
     public function getWithModerator(string $slug)
     {
@@ -68,7 +68,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      * create a new category and return the category with its moderator
      *
      * @param  array $data consists of {title, slug, description, moderator}
-     * @return \App\Category
+     * @return \stdClass
      */
     public function create($data)
     {

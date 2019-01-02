@@ -202,7 +202,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      *
      * @param  string  $slug
      * @param  boolean $published 1 => get only if published
-     * @return \App\Post
+     * @return \stdClass
      */
     public function getPost(string $slug, bool $published = false)
     {
@@ -232,7 +232,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      * create a new post
      *
      * @param  array $data consists of {title, body, category_id, caption}
-     * @return \App\Post
+     * @return \stdClass
      */
     public function create(array $data)
     {

@@ -5,10 +5,10 @@ namespace App\Repositories;
 class BaseRepository
 {
     /**
-    * the current record we are working in
-    *
-    * @var \App\$this->_model
-    */
+     * the current record we are working in
+     *
+     * @var \App\$this->_model
+     */
     protected $_record;
 
     /**

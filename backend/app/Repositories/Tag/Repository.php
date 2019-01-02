@@ -49,7 +49,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      * get the $slug tag with counting the posts associated with it.
      *
      * @param  string $slug
-     * @return \App\Tag
+     * @return \stdClass
      */
     public function getWithCountPosts(string $slug)
     {
@@ -67,7 +67,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      *
      * @param  string $slug
      * @param  array  $data consists of {name}
-     * @return \App\Tag
+     * @return \stdClass
      */
     public function update(string $slug, array $data)
     {

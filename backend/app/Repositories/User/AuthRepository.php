@@ -14,7 +14,7 @@ class AuthRepository extends Repository implements AuthRepositoryInterface
     /**
      * return the current authenticated user
      *
-     * @return \App\User
+     * @return \stdClass
      */
     public function user()
     {

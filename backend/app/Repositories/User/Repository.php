@@ -58,7 +58,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      * [posts, comments, votes, recommendations]
      *
      * @param  string $slug
-     * @return \App\Tag
+     * @return \stdClass
      */
     public function getUser(string $slug)
     {
@@ -109,7 +109,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      * create a new user
      *
      * @param  array  $userData ['username', 'email', 'password', 'description']
-     * @return \App\User
+     * @return \stdClass
      */
     public function create(array $userData)
     {
