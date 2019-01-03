@@ -71,12 +71,13 @@ class PostRequest extends FormRequest
                 },
             ],
             'body'        => 'required',
+            'caption'     => ['image'],
             'tags'        => 'array',
             'category_id' => 'required|integer'
         ];
 
         if ($method === 'POST') {
-            $rules['caption'] = 'required';
+            $rules['caption'][] = 'required';
         }
 
         return $rules;

@@ -150,7 +150,7 @@ class PostController extends Controller
         // update the post caption if a valid file given
         if ($request->hasFile('caption') && $request->file('caption')->isValid()) {
             $data['caption'] = UploadingFiles::uploadCaption(
-                $request->file('caption'), $post->caption
+                $request->file('caption'), $post->caption ?? ''
             );
         }
         else {

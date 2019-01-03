@@ -57,8 +57,8 @@ class UploadingFiles
         // filename to store
         $filenameToStore = $filename . '-' . time() . '_' . $extension;
 
-        // resize and upload the avatar & thumbnail
-        $captionImage = \Image::make($caption)->fit(700, 500)->stream();
+        // resize and upload the caption
+        $captionImage = \Image::make($caption)->fit(1000, 450)->stream();
         Storage::put('public/posts/captions/' . $filenameToStore, $captionImage);
 
         return $filenameToStore;
@@ -89,7 +89,7 @@ class UploadingFiles
         $newImages = [];
 
         if ($prevBody !== '') {
-            # now we have all the images from the previos post body
+            # now we have all the images from the previous post body
             $prevImages = self::getImages($prevBody);
         }
 
