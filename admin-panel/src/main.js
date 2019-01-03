@@ -7,7 +7,7 @@ window._ = _;
 window.$ = $;
 
 require('bootstrap');
-import './assets/js/admin.js';
+require('./assets/js/admin.js');
 import './assets/js/fontawesome.js';
 
 
@@ -58,9 +58,6 @@ Vue.prototype.$gate = new Gate();
 import Paginate from 'vuejs-paginate';
 Vue.component('paginate', Paginate);
 
-import wysiwyg from "vue-wysiwyg";
-Vue.use(wysiwyg, {});
-
 import Breabcrumbs from 'vue-2-breadcrumbs';
 Vue.use(Breabcrumbs);
 
@@ -76,17 +73,8 @@ Object.defineProperties(Vue.prototype, {
 });
 
 
-// register global components
-Vue.component('sidebar', require('./components/partials/sidebar').default);
-Vue.component('navbar', require('./components/partials/navbar').default);
-Vue.component('foooter', require('./components/partials/footer').default);
-
-Vue.component('modal', require('./components/notifications/modal').default);
-Vue.component('message', require('./components/notifications/message').default);
-
-
 // Vue instance
-import EntryPoint from './components/entry_point';
+import EntryPoint from './EntryPoint';
 
 new Vue({
   el: '#app',

@@ -81,7 +81,7 @@ export default {
     searchUsers(query) {
       this.isLoading = true;
 
-      (_.debounce(
+      (window._.debounce(
         async function (vm, query) {
           if (query != '') {
             await vm.$store.dispatch('users/searchUsers', query);
@@ -111,7 +111,7 @@ export default {
           confirm: false
         }, { root: true });
 
-        $('#modal').modal('hide');
+        window.$('#modal').modal('hide');
       })
       .catch((error) => {
         let response = error.response;
@@ -138,7 +138,7 @@ export default {
           confirm: false
         }, { root: true });
 
-        $('#modal').modal('hide');
+        window.$('#modal').modal('hide');
       })
       .catch((error) => {
         let response = error.response;

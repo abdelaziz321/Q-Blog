@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import helpers from '../../../helpers.js';
+import helpers from '@/helpers.js';
 import PostTable from '../posts/post_table';
 
 export default {
@@ -91,7 +91,7 @@ export default {
   methods: {
     setPage(page) {
       this.page = page;
-      router.push('/categories/' + this.$route.params.category + '/posts?page=' + page);
+      this.$router.push('/categories/' + this.$route.params.category + '/posts?page=' + page);
     }
   }
 }

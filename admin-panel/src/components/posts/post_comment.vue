@@ -39,8 +39,29 @@ export default {
 
       this.$bus.$off('proceed');
       this.$bus.$once('proceed', () => {
-        this.$store.dispatch('comments/deleteComment', this.comment);
+        this.delete(this.comment);
         this.$store.dispatch('message/close');
+      });
+    },
+
+    delete(comment) {
+      this.$store.dispatch('comments/deleteComment', comment).
+      then((response) => {
+        // send successful message
+        this.$store.dispatch('message/update', {
+          body: response.data.message,
+          class: 'success',
+          confirm: false
+        }, { root: true });
+      })
+      .catch((error) => {
+        // send error message
+        this.$store.dispatch('message/update', {
+          class: 'danger',
+          body: error.response.data.message,
+          errors: error.response.data.errors,
+          confirm: false
+        }, { root: true });
       });
     }
   }

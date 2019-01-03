@@ -18,7 +18,6 @@
         <tbody>
           <comment-row
             v-for="comment in comments"
-            v-if="comment"
             :comment="comment"
             :key="comment.id"
           ></comment-row>
@@ -48,7 +47,7 @@
 </template>
 
 <script>
-import helpers from '../../../helpers.js';
+import helpers from '@/helpers.js';
 import CommentRow from './comment_row';
 
 export default {
@@ -89,7 +88,7 @@ export default {
   methods: {
     setPage(page) {
       this.page = page;
-      router.push('comments?page=' + page);
+      this.$router.push('comments?page=' + page);
     }
   }
 }

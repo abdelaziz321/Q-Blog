@@ -2,7 +2,10 @@
   <div class="login_page">
     <h2 class="text-center">Q-Blog <span>Admin Panel</span></h2>
     <form class="form-signin">
-      <h4 class="h4 mb-4 text-center">Login</h4>
+      <h4 class="h4 mb-4 text-center">
+        <font-awesome-icon class="mr-1" icon="lock" />
+        Login
+      </h4>
 
       <label for="inputEmail" class="sr-only">Email address</label>
       <input type="email" v-model="email" class="form-control mb-3" placeholder="Email address" required autofocus>
@@ -16,7 +19,7 @@
         </label>
       </div>
 
-      <button class="btn btn-primary btn-lg btn-block" type="submit" @click.prevent="login">Sign in</button>
+      <button class="btn btn-primary btn-block" type="submit" @click.prevent="login">Sign in</button>
 
       <hr />
 
@@ -58,8 +61,8 @@ export default {
           this.$auth.token('access_token', response.data.token);
         },
         error: (error) => {
-          console.log(error);
-          console.log(error.data);
+          window.console.log(error);
+          window.console.log(error.data);
         },
         fetchUser: false
       });

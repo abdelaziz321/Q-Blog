@@ -82,6 +82,7 @@
     </div>
     <hr>
 
+    <!-- Post Comments -->
     <div v-if="typeof comments !== 'undefined' && comments.length !== 0" class="comments mt-3 mb-5">
       <h4 class="mb-4">Comments</h4>
 
@@ -118,7 +119,6 @@
 
         </div>
       </div> -->
-
     </div>
 
   </div>
@@ -138,24 +138,27 @@ export default {
     post: function () {
       return this.$store.getters['posts/post'];
     },
+
     comments: function () {
       return this.$store.getters['comments/comments'];
     },
+
     caption: function () {
       if (!!this.post.caption) {
         return this.$baseURL + '/storage/posts/captions/' + this.post.caption;
       }
       return 0;
     },
+
     body: function () {
       if (!!this.post.body) {
-        return this.post.body.replace(/posts\/images\/.*\.png/g, (imagePath) => {
-          return this.$baseURL + '/storage/' +  imagePath;
+        return this.post.body.replace(/"posts\/images\/.*?\.png/g, (imagePath) => {
+          return '"' + this.$baseURL + '/storage/' +  imagePath.substr(1);
         });
       }
+      return '';
     }
   },
-
 
   created: function () {
     this.$store.dispatch('posts/getPost', this.$route.params.post);
@@ -174,9 +177,32 @@ export default {
 
       this.$bus.$off('proceed');
       this.$bus.$once('proceed', () => {
-        this.$store.dispatch('posts/deletePost', this.post);
+        this.delete(this.post);
         this.$store.dispatch('message/close');
         this.$router.push('/posts');
+      });
+    },
+
+    delete(post) {
+      this.$store.dispatch('posts/deletePost', post)
+      .then((message) => {
+        // send successful message
+        this.$store.dispatch('message/update', {
+          title: post.title,
+          body: message,
+          class: 'success',
+          confirm: false
+        }, { root: true });
+      })
+      .catch((error) => {
+        // send error message
+        this.$store.dispatch('message/update', {
+          title: post.title,
+          class: 'danger',
+          body: error.response.data.message,
+          errors: error.response.data.errors,
+          confirm: false
+        }, { root: true });
       });
     },
 
@@ -184,7 +210,8 @@ export default {
       this.$store.dispatch('posts/publishing', {
         post: this.post,
         action: action
-      }).then((response) => {
+      })
+      .then((response) => {
         this.$store.dispatch('message/update', {
           title: this.post.title,
           body: response.data.message,

@@ -47,7 +47,7 @@ export default {
       this.$store.dispatch('comments/deleteComment', comment).
       then((response) => {
         // send successful message
-        dispatch('message/update', {
+        this.$store.dispatch('message/update', {
           body: response.data.message,
           class: 'success',
           confirm: false
@@ -55,7 +55,7 @@ export default {
       })
       .catch((error) => {
         // send error message
-        dispatch('message/update', {
+        this.$store.dispatch('message/update', {
           class: 'danger',
           body: error.response.data.message,
           errors: error.response.data.errors,

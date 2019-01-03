@@ -3,6 +3,7 @@ export default {
    * get page number from url if provided
    ------------------------------------------*/
   getPageQuery() {
+    let _ = window._;
     let queryString = _.chain(window.location)
                        .split('?', '2')
                        .value();

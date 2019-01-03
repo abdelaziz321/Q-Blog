@@ -5,22 +5,22 @@
     <div class="form-group">
       <label class="label-form">Tags:</label>
       <multiselect
-        v-model="postForm.tags"
-        @search-change="searchTags"
         :options="tags"
-        :limit-text="limitTextTags"
+        v-model="postForm.tags"
         :loading="isLoadingTag"
-        @tag="addTag"
+        @search-change="searchTags"
         label="name"
         track-by="id"
+        @tag="addTag"
+        :taggable="true"
         :max="7"
         :limit="3"
-        :taggable="true"
         :multiple="true"
         :max-height="130"
         :options-limit="20"
         :internal-search="false"
         :close-on-select="false"
+        :limit-text="limitTextTags"
         placeholder="select the tags of the posts"
       >
       </multiselect>
@@ -57,7 +57,7 @@ export default {
 
   computed: {
     tags: function () {
-      return this.$store.getters['tags/tagsSearch'];
+      return this.$store.getters['tags/search'];
     }
   },
 
@@ -71,7 +71,7 @@ export default {
     searchTags(query) {
       this.isLoading = true;
 
-      (_.debounce(
+      (window._.debounce(
         async function (vm, query) {
           if (query != '') {
             await vm.$store.dispatch('tags/searchTags', query);
@@ -81,16 +81,16 @@ export default {
       , 300))(this, query);
     },
 
-    limitTextTags(count) {
-      return `and ${count} other tags`
-    },
-
-    addTag (newTag) {
+    addTag(newTag) {
       const tag = {
         name: newTag,
         id: newTag.substring(0, 2) + Math.floor((Math.random() * 10000000))
       }
       this.postForm.tags.push(tag);
+    },
+
+    limitTextTags(count) {
+      return `and ${count} other tags`
     },
 
     save () {

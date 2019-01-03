@@ -17,7 +17,8 @@ import {
   faAngleDown,
   faSignOutAlt,
   faSpinner,
-  faTimes
+  faTimes,
+  faLock
 } from '@fortawesome/free-solid-svg-icons';
 
 import {
@@ -52,5 +53,8 @@ library.add(faWrench);
 // dashboard
 library.add(faUsers);
 library.add(faEye);
+
+// login
+library.add(faLock);
 
 Vue.component('font-awesome-icon', FontAwesomeIcon);

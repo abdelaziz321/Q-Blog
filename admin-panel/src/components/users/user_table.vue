@@ -3,23 +3,26 @@
     <table class="table table-striped table-light table-bordered table-hover text-center" id="dataTable" width="100%" cellspacing="0">
       <thead>
         <tr>
-          <th>Tag</th>
-          <th>Posts</th>
+          <th>Avatar</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Comments</th>
+          <th title="recommendations">Recom.</th>
           <th>Controls</th>
         </tr>
       </thead>
       <tbody>
-        <tag-row
-          v-for="tag in tags"
-          v-if="tag"
-          :tag="tag"
-          :key="tag.slug"
-        ></tag-row>
+        <user-row
+          v-for="user in users"
+          :user="user"
+          :key="user.slug"
+        ></user-row>
       </tbody>
     </table>
 
     <paginate
-      v-model="page"
+      v-model="currentPage"
       :page-count="totalPages"
       :click-handler="setPage"
       :prev-text="'<'"
@@ -39,49 +42,33 @@
 </template>
 
 <script>
-import helpers from '../../../helpers.js';
-import TagRow from './tag_row';
+import UserRow from './user_row';
 
 export default {
   components: {
-    TagRow
+    UserRow
   },
 
 
-  data: function () {
-    return {
-      page: 0
-    }
-  },
+  props: [
+    'users', 'totalPages', 'page'
+  ],
 
 
   computed: {
-    tags: function () {
-      return this.$store.getters['tags/tags'];
-    },
-    totalPages: function () {
-      return this.$store.getters['tags/totalPages'];
+    currentPage: {
+      get: function () {
+        return  this.page;
+      },
+      set: function () {}
     }
   },
-
-
-  created: function () {
-    this.page = helpers.getPageQuery();
-  },
-
-
-  watch: {
-    page: function (val) {
-      this.$store.dispatch('tags/getAllTags', val);
-    }
-  },
-
+  
 
   methods: {
-    setPage(page) {
-      this.page = page;
-      router.push('tags?page=' + page);
-    }
+     setPage(page) {
+       this.$emit('setPage', page);
+     }
   }
 }
 </script>

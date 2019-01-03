@@ -2,36 +2,11 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 Vue.use(VueRouter);
 
-import App from './components/App';
-import Login from './components/pages/auth/login';
-
-import Dashboard from './components/pages/dashboard';
-
-import Categories from './components/pages/categories/categories';
-import CategoryTable from './components/pages/categories/category_table';
-import Category from './components/pages/categories/category';
-
-import Tags from './components/pages/tags/tags';
-import TagTable from './components/pages/tags/tag_table';
-import Tag from './components/pages/tags/tag';
-
-import Users from './components/pages/users/users';
-import AllUsers from './components/pages/users/all_users';
-import BannedUsers from './components/pages/users/banned_users';
-import User from './components/pages/users/user';
-
-import Posts from './components/pages/posts/posts';
-import AllPosts from './components/pages/posts/all_posts';
-import UnpublishedPosts from './components/pages/posts/unpublished_posts';
-import Post from './components/pages/posts/post';
-import PostForm from './components/pages/posts/form';
-
-import Comments from './components/pages/comments/comments';
-
-import PageNotFound from './components/partials/404';
+import App from '@/views/App';
+import Login from '@/views/Login';
+import NotFound from '@/views/NotFound';
 
 
-// router
 const routes = [
   {
     path: '/login',
@@ -51,7 +26,7 @@ const routes = [
       // ---------- dashboard routes
       {
         path: '/dashboard',
-        component: Dashboard,
+        component: () => import('@/components/dashboard'),
         name: 'dashboard',
         meta: {
           breadcrumb: 'Dashboard'
@@ -61,18 +36,18 @@ const routes = [
       // ---------- categories routes
       {
         path: '/categories',
-        component: Categories,
+        component: () => import('@/components/categories/categories'),
         meta: {
           breadcrumb: 'Categories'
         },
         children: [
           {
             path: '',
-            component: CategoryTable
+            component: () => import('@/components/categories/category_table'),
           },
           {
             path: ':category/posts',
-            component: Category,
+            component: () => import('@/components/categories/category'),
             meta: {
               breadcrumb: (routeParams) => `${routeParams.category}`
             }
@@ -83,18 +58,18 @@ const routes = [
       // ---------- tags routes
       {
         path: '/tags',
-        component: Tags,
+        component: () => import('@/components/tags/tags'),
         meta: {
           breadcrumb: 'tags'
         },
         children: [
           {
             path: '',
-            component: TagTable
+            component: () => import('@/components/tags/tag_table'),
           },
           {
             path: '/tags/:tag/posts',
-            component: Tag,
+            component: () => import('@/components/tags/tag'),
             meta: {
               breadcrumb: (routeParams) => `${routeParams.tag}`
             }
@@ -105,25 +80,25 @@ const routes = [
       // ---------- users routes
       {
         path: '/users',
-        component: Users,
+        component: () => import('@/components/users/users'),
         meta: {
           breadcrumb: 'users'
         },
         children: [
           {
             path: '',
-            component: AllUsers
+            component: () => import('@/components/users/all_users'),
           },
           {
             path: 'banned',
-            component: BannedUsers,
+            component: () => import('@/components/users/banned_users'),
             meta: {
               breadcrumb: 'banned'
             }
           },
           {
             path: '/users/:user/posts',
-            component: User,
+            component: () => import('@/components/users/user'),
             meta: {
               breadcrumb: (routeParams) => `${routeParams.user}`
             }
@@ -134,39 +109,39 @@ const routes = [
       // ---------- posts routes
       {
         path: '/posts',
-        component: Posts,
+        component: () => import('@/components/posts/posts'),
         meta: {
           breadcrumb: 'posts'
         },
         children: [
           {
             path: '',
-            component: AllPosts
+            component: () => import('@/components/posts/all_posts'),
           },
           {
             path: 'unpublished',
-            component: UnpublishedPosts,
+            component: () => import('@/components/posts/unpublished_posts'),
             meta: {
               breadcrumb: 'unpublished posts'
             }
           },
           {
             path: 'new-post',
-            component: PostForm,
+            component: () => import('@/components/posts/form'),
             meta: {
               breadcrumb: 'new posts'
             }
           },
           {
             path: 'update-post/:post',
-            component: PostForm,
+            component: () => import('@/components/posts/form'),
             meta: {
               breadcrumb: (routeParams) => `${routeParams.post}`
             }
           },
           {
             path: ':post',
-            component: Post,
+            component: () => import('@/components/posts/post'),
             meta: {
               breadcrumb: (routeParams) => `${routeParams.post}`
             }
@@ -177,7 +152,7 @@ const routes = [
       // ---------- comments routes
       {
         path: '/comments',
-        component: Comments,
+        component: () => import('@/components/comments/comments'),
         meta: {
           breadcrumb: 'comments'
         }
@@ -185,11 +160,11 @@ const routes = [
     ]
   },
 
-  // ---------- 400 routes
+  // ---------- 404 route
   {
     path: "/404",
     alias: "*",
-    component: PageNotFound
+    component: NotFound
   }
 ];
 

@@ -46,7 +46,7 @@ export default {
           confirm: false
         }, { root: true });
 
-        $('#modal').modal('hide');
+        window.$('#modal').modal('hide');
       })
       .catch((error) => {
         let response = error.response;

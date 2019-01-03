@@ -23,18 +23,18 @@
 
   .sub-title {
     padding: 12px 0;
-    background: linear-gradient(to right, transparent, #fbfbfb, transparent);
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .text_editor {
+    color: $gray-700;
+    letter-spacing: 1px;
   }
 }
 
 .label-form {
   color: $gray-700;
   font-size: 0.95em;
-}
-
-.editr--content {
-  background-color: #fff;
 }
 
 .multiselect {

@@ -28,7 +28,7 @@ const actions = {
   update ({commit}, modal) {
     modal.show = true;
     commit('update', modal);
-    $('#modal').modal('show');
+    window.$('#modal').modal('show');
   }
 };
 

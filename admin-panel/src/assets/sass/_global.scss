@@ -45,41 +45,12 @@ body.fixed-nav {
 .content-wrapper {
   min-height: calc(100vh - #{$sticky-footer-height});
   background-color: $gray-400 !important;
-  padding-top: 1rem;
+  padding: 90px 0;
 }
 
 a,a:hover,a:focus{
     text-decoration: none !important;
     outline: 0 !important;
-}
-
-// Scroll to top button
-.scroll-to-top {
-  position: fixed;
-  right: 15px;
-  bottom: 3px;
-
-  display: none;
-
-  width: 50px;
-  height: 50px;
-
-  text-align: center;
-
-  color: white;
-  background: fade-out($gray-800, .5);
-
-  line-height: 45px;
-  &:focus,
-  &:hover {
-    color: white;
-  }
-  &:hover {
-    background: $gray-800;
-  }
-  i {
-    font-weight: 800;
-  }
 }
 
 .table {

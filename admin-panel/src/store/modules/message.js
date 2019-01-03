@@ -28,7 +28,7 @@ const mutations = {
     state.message = message;
   },
 
-  SHOW_MESSAGE(state, message) {
+  SHOW_MESSAGE(state) {
     state.message.showMessage = true;
   },
 
@@ -44,7 +44,7 @@ const mutations = {
 // actions
 const actions = {
 
-  update ({state, commit, dispatch}, message) {
+  update ({commit, dispatch}, message) {
     commit('STOP_WAITING');
     commit('CLEAR_TIMEOUT');
 

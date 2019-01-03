@@ -16,21 +16,25 @@
   );
 
   > h2 {
-    font-size: 1.7em;
+    position: relative;
+    top: 20px;
+    font-size: 1.3em;
+    letter-spacing: 1px;
     margin-bottom: 0;
     padding: 15px 30px 15px 30px;
-    letter-spacing: 1px;
-    border-radius: 5px 5px 0 0;
-    color: rgba(255,255,255,0.8);
-    background-color: rgba(0,0,0,0.1);
-    text-shadow: 3px 3px 0 rgba(0,0,0,0.3);
-    box-shadow: 0 0 1px;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-bottom: 4px solid rgba(0,0,0,0.1);
+    font-weight: 900;
+    color: #ffffff;
+    background-color: #225e90;
+    box-shadow: 0px 2px 10px $gray-800;
 
     > span {
-      font-size: 0.4em;
-      color: #96d5f8;
-      font-weight: 900;
-      text-shadow: 2px 2px 1px rgba(0, 0, 0, 0.3);
+      font-size: 0.6em;
+      padding: 2px 6px;
+      letter-spacing: 0;
+      color: rgba(255,255,255,0.8);
+      background-color: rgba(0,0,0,0.1);
     }
   }
 
@@ -38,13 +42,17 @@
     color: $gray-800;
     width: 360px;
     background-color: #f6f6f6;
-    padding: 35px 15px 25px 15px;
+    padding: 45px 15px 25px 15px;
     box-shadow: 5px 7px 0px rgba(0,0,0,0.2);
     border: 1px solid $gray-800;
 
     > h4 {
       letter-spacing: 1px;
       font-weight: 900;
+
+      svg {
+        color: #225e90;
+      }
     }
 
     .form-control {
@@ -52,6 +60,15 @@
 
       &:focus {
         border-color: rgba(0,0,0,0.2)
+      }
+    }
+
+    > button {
+      background-color: #225e90;
+      border: 0;
+      
+      &:hover {
+        background-color: $gray-800;
       }
     }
   }

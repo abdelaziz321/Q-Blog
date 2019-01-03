@@ -59,8 +59,8 @@ const actions = {
 
   // =========================================================================
 
-  deleteComment({commit, dispatch}, comment) {
-    axios.post('/admin/comments/' + comment.id, {
+  deleteComment({commit}, comment) {
+    return axios.post('/admin/comments/' + comment.id, {
       '_method': 'DELETE'
     }).then((response) => {    
       commit('DELETE_COMMENT', comment);

@@ -1,6 +1,16 @@
 #mainNav {
-  .navbar-brand svg {
-    color: rgba(255,255,255,0.4);
+  z-index: 10;
+
+  .navbar-brand {
+    > span {
+      background-color: rgba(0,0,0,0.2);
+      font-size: 0.6em;
+      padding: 2px 5px;
+    }
+
+    > svg {
+      color: rgba(255,255,255,0.4);
+    }
   }
 
   .navbar-collapse {

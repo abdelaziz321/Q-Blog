@@ -3,22 +3,26 @@
     <table class="table table-striped table-light table-bordered table-hover text-center" id="dataTable" width="100%" cellspacing="0">
       <thead>
         <tr>
-          <th>Avatar</th>
-          <th>Username</th>
-          <th>Email</th>
-          <th>Role</th>
+          <th>Title</th>
+          <th>Views</th>
           <th>Comments</th>
-          <th title="recommendations">Recom.</th>
+          <th title="Recommendations">Recom.</th>
+          <th>Published</th>
+          <th v-if="typeof $route.params.user === 'undefined'">
+            <router-link to="/users">Author</router-link>
+          </th>
+          <th v-if="typeof $route.params.category === 'undefined'">
+            <router-link to="/categories">Category</router-link>
+          </th>
           <th>Controls</th>
         </tr>
       </thead>
       <tbody>
-        <user-row
-          v-for="user in users"
-          v-if="user"
-          :user="user"
-          :key="user.slug"
-        ></user-row>
+        <post-row
+          v-for="post in posts"
+          :post="post"
+          :key="post.id"
+        ></post-row>
       </tbody>
     </table>
 
@@ -43,16 +47,16 @@
 </template>
 
 <script>
-import UserRow from './user_row';
+import PostRow from './post_row';
 
 export default {
   components: {
-    UserRow
+    PostRow
   },
 
 
   props: [
-    'users', 'totalPages', 'page'
+    'posts', 'totalPages', 'page'
   ],
 
 
@@ -61,17 +65,15 @@ export default {
       get: function () {
         return  this.page;
       },
-      set: function (newValue) {
-
-      }
+      set: function () {}
     }
   },
-  
+
 
   methods: {
-     setPage(page) {
-       this.$emit('setPage', page);
-     }
+    setPage(page) {
+      this.$emit('setPage', page);
+    }
   }
 }
 </script>

@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import axios from 'axios';
 
 // initial state
@@ -104,11 +105,11 @@ const actions = {
 
   // =========================================================================
 
-  assignRole({dispatch, commit}, payload) {
+  assignRole({commit}, payload) {
     axios.post('/admin/users/' + payload.user.slug + '/assign-role', {
       role: payload.role
     })
-    .then((response) => {
+    .then(() => {
       payload.user.role = payload.role;
       commit('UPDATE_USER', payload.user);
     });
@@ -116,7 +117,7 @@ const actions = {
 
   // =========================================================================
 
-  deleteUser({dispatch, commit}, user) {
+  deleteUser({commit}, user) {
     axios.post('/admin/users/' + user.slug, {
       '_method': 'DELETE'
     })

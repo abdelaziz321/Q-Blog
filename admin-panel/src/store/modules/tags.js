@@ -1,9 +1,10 @@
+import Vue from 'vue';
 import axios from 'axios';
 
 // initial state
 const state = {
-  tags: {},
-  tagsSearch: [],
+  tags: [],
+  search: [],
   totalPages: 0
 }
 
@@ -15,8 +16,8 @@ const getters = {
   totalPages: (state) => {
     return state.totalPages;
   },
-  tagsSearch: (state) => {
-    return state.tagsSearch;
+  search: (state) => {
+    return state.search;
   }
 }
 
@@ -27,7 +28,7 @@ const mutations = {
   },
 
   SET_TAGS_SEARCH(state, tags) {
-    state.tagsSearch = tags;
+    state.search = tags;
   },
 
   SET_TOTAL_PAGES(state, totalPages) {
@@ -67,7 +68,7 @@ const actions = {
 
   // =========================================================================
 
-  searchTags({ commit }, query) {
+  searchTags({commit}, query) {
     return axios.get('/tags/search?q=' + query)
       .then((response) => {
         commit('SET_TAGS_SEARCH', response.data);
@@ -85,7 +86,7 @@ const actions = {
 
   // =========================================================================
 
-  updateTag ({commit, dispatch}, tag) {
+  updateTag ({commit}, tag) {
     return axios.post('/admin/tags/' + tag.slug, {
       _method: 'PUT',
       name: tag.name
@@ -98,7 +99,7 @@ const actions = {
 
   // =========================================================================
 
-  deleteTag({dispatch, commit}, tag) {
+  deleteTag({commit}, tag) {
     return axios.post('/admin/tags/' + tag.slug, {
       '_method': 'DELETE'
     }).then((response) => {

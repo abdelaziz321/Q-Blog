@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import helpers from '../../../helpers.js';
+import helpers from '@/helpers.js';
 import UserTable from './user_table';
 
 export default {

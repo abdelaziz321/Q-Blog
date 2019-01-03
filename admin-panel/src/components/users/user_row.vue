@@ -121,7 +121,7 @@ export default {
         let response = error.response;
 
         // send error message
-        dispatch('message/update', {
+        this.$store.dispatch('message/update', {
           title: user.title,
           body: response.data.message,
           itemsErrors: response.data.errors,

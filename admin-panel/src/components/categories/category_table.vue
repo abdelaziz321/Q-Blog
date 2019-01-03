@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import helpers from '../../../helpers.js';
+import helpers from '@/helpers.js';
 import categoryForm from './form';
 import CategoryRow from './category_row';
 

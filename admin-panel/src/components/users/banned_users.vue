@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import helpers from '../../../helpers.js';
+import helpers from '@/helpers.js';
 import UserTable from './user_table';
 
 export default {
@@ -51,7 +51,7 @@ export default {
   methods: {
     setPage(page) {
       this.page = page;
-      router.push('users?page=' + page);
+      this.$router.push('users?page=' + page);
     }
   }
 }

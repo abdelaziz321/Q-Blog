@@ -56,8 +56,6 @@
 </template>
 
 <script>
-import postForm from './form';
-
 export default {
   props: [
     'post'
@@ -85,8 +83,31 @@ export default {
 
       this.$bus.$off('proceed');
       this.$bus.$once('proceed', () => {
-        this.$store.dispatch('posts/deletePost', this.post);
+        this.delete(this.post);
         this.$store.dispatch('message/close');
+      });
+    },
+
+    delete(post) {
+      this.$store.dispatch('posts/deletePost', post)
+      .then((message) => {
+        // send successful message
+        this.$store.dispatch('message/update', {
+          title: post.title,
+          body: message,
+          class: 'success',
+          confirm: false
+        }, { root: true });
+      })
+      .catch((error) => {
+        // send error message
+        this.$store.dispatch('message/update', {
+          title: post.title,
+          class: 'danger',
+          body: error.response.data.message,
+          errors: error.response.data.errors,
+          confirm: false
+        }, { root: true });
       });
     }
   }

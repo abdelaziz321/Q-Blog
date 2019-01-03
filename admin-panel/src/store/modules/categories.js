@@ -1,11 +1,12 @@
+import Vue from 'vue';
 import axios from 'axios';
 
 // initial state
 const state = {
   category: {},
-
   categories: [],
-  totalPages: 0
+  search: [],
+  totalPages: 0,
 }
 
 // getters
@@ -18,6 +19,9 @@ const getters = {
   },
   totalPages: (state) => {
     return state.totalPages;
+  },
+  search: (state) => {
+    return state.search;
   }
 }
 
@@ -29,6 +33,10 @@ const mutations = {
 
   SET_CATEGORIES(state, categories) {
     state.categories = categories;
+  },
+
+  SET_CATEGORIES_SEARCH(state, categories) {
+    state.search = categories;
   },
 
   SET_TOTAL_PAGES(state, totalPages) {
@@ -47,7 +55,7 @@ const mutations = {
     Vue.set(state.categories, categoryIndex, JSON.parse(JSON.stringify(category)));
   },
 
-  DELETE_CATEGORY(state, category) {
+  DELETE_CATEGORY(state, category) {   
     let index = state.categories.indexOf(category);
     if (index > -1) {
       state.categories.splice(index, 1);
@@ -70,6 +78,15 @@ const actions = {
 
   // =========================================================================
 
+  searchCategories({ commit }, query) {
+    return axios.get('/categories/search?q=' + query)
+      .then((response) => {
+        commit('SET_CATEGORIES_SEARCH', response.data);
+      });
+  },
+
+  // =========================================================================
+
   getCategory({commit}, slug) {
     axios.get('/admin/categories/' + slug)
     .then((response) => {
@@ -79,7 +96,7 @@ const actions = {
 
   // =========================================================================
 
-  createCategory ({commit, dispatch}, category) {
+  createCategory ({commit}, category) {
     let moderatorId = null;
     if (category.moderator != null) {
       moderatorId = category.moderator.id;
@@ -97,7 +114,7 @@ const actions = {
 
   // =========================================================================
 
-  updateCategory ({commit, dispatch}, category) {
+  updateCategory ({commit}, category) {
     let moderatorId = null;
     if (category.moderator != null) {
       moderatorId = category.moderator.id;
@@ -115,10 +132,11 @@ const actions = {
 
   // =========================================================================
 
-  deleteCategory({commit, dispatch}, category) {
+  deleteCategory({commit}, category) {
     return axios.post('/admin/categories/' + category.slug, {
       '_method': 'DELETE'
-    }).then((response) => {
+    })
+    .then((response) => {
       commit('DELETE_CATEGORY', category);
       return response;
     });

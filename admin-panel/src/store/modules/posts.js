@@ -1,9 +1,9 @@
+import Vue from 'vue';
 import axios from 'axios';
 
 // initial state
 const state = {
   post: {},
-
   posts: [],
   totalPages: 0
 }
@@ -45,15 +45,18 @@ const mutations = {
 
   UPDATE_POSTS(state, post) {
     let postIndex = state.posts.findIndex((item) => {
-      return item.id == post.id;
+      return item.id === post.id;
     });
     Vue.set(state.posts, postIndex, JSON.parse(JSON.stringify(post)));
   },
 
   DELETE_POSTS(state, post) {
-    let index = state.posts.indexOf(post);
-    if (index > -1) {
-      state.posts.splice(index, 1);
+    let postIndex = state.posts.findIndex((item) => {
+      return item.id === post.id;
+    });
+
+    if (postIndex > -1) {
+      state.posts.splice(postIndex, 1);
     }
   }
 }
@@ -135,7 +138,7 @@ const actions = {
 
   // =========================================================================
 
-  createPost({commit, dispatch}, post) {
+  createPost({}, post) {
     let tagsNames = post.tags.map((tag) => {
       return tag.name;
     });
@@ -148,117 +151,63 @@ const actions = {
     for (var i = 0; i < tagsNames.length; i++) {
         formData.append('tags[]', tagsNames[i]);
     }
-
-    axios.post('/admin/posts', formData, {
+    
+    return axios.post('/admin/posts', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     })
     .then((response) => {
-      // send successful message
-      dispatch('message/update', {
-        title: post.title,
-        body: `${post.title} post has been added successfully`,
-        class: 'success',
-        confirm: false
-      }, { root: true });
+      return response.data.post.slug;
     })
-    .catch((error) => {
-      let response = error.response;
-
-      // send error message
-      dispatch('message/update', {
-        title: post.title,
-        body: response.data.message,
-        itemsErrors: response.data.errors,
-        class: 'danger',
-        confirm: false
-      }, { root: true });
-    });
   },
 
   // =========================================================================
 
-  updatePost ({commit, dispatch}, post) {
-    return new Promise((resolve, reject) => {
+  updatePost ({}, post) {
+    let tagsNames = post.tags.map((tag) => {
+      return tag.name;
+    });
 
-      let tagsNames = post.tags.map((tag) => {
-        return tag.name;
-      });
-
-      let formData = new FormData();
-      formData.append('_method', 'PUT');
-      formData.append('title', post.title);
-      formData.append('body', post.body);
+    let formData = new FormData();
+    formData.append('_method', 'PUT');
+    formData.append('title', post.title);
+    formData.append('body', post.body);
+    
+    if (post.caption !== undefined) {
       formData.append('caption', post.caption);
-      formData.append('category_id', post.category.id);
-      for (var i = 0; i < tagsNames.length; i++) {
-          formData.append('tags[]', tagsNames[i]);
+    }
+    
+    formData.append('category_id', post.category.id);
+    for (var i = 0; i < tagsNames.length; i++) {
+        formData.append('tags[]', tagsNames[i]);
+    }
+
+    return axios.post('/admin/posts/' + post.slug, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
       }
-
-      axios.post('/admin/posts/' + post.slug, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      .then((response) => {
-        // send successful message
-        dispatch('message/update', {
-          title: post.title,
-          body: `${post.title} post has been updated successfully`,
-          class: 'success',
-          confirm: false
-        }, { root: true });
-
-        resolve(response.data.post.slug);
-      })
-      .catch((error) => {
-        let response = error.response;
-
-        // send error message
-        dispatch('message/update', {
-          title: post.title,
-          body: response.data.message,
-          itemsErrors: response.data.errors,
-          class: 'danger',
-          confirm: false
-        }, { root: true });
-
-        reject();
-      });
-    });
+    })
+    .then((response) => {
+      return response.data.post.slug;
+    })
   },
 
   // =========================================================================
 
-  deletePost({commit, dispatch}, post) {
-    axios.post('/admin/posts/' + post.slug, {
+  deletePost({commit}, post) {
+    return axios.post('/admin/posts/' + post.slug, {
       '_method': 'DELETE'
-    }).then((response) => {
-      // send successful message
-      dispatch('message/update', {
-        title: post.title,
-        body: response.data.message,
-        class: 'success',
-        confirm: false
-      }, { root: true });
-
+    })
+    .then((response) => {
       commit('DELETE_POSTS', post);
-    }).catch((error) => {
-      // send error message
-      dispatch('message/update', {
-        title: post.title,
-        class: 'danger',
-        body: error.response.data.message,
-        errors: error.response.data.errors,
-        confirm: false
-      }, { root: true });
-    });
+      return response.data.message;
+    });    
   },
 
   // =========================================================================
 
-  publishing({ dispatch, commit }, payload) {
+  publishing({commit}, payload) {
     return axios.post('/admin/posts/' + payload.post.slug + '/publishing?action=' + payload.action)
       .then((response) => {
         switch (payload.action) {
@@ -279,7 +228,7 @@ const actions = {
 
   // =========================================================================
 
-  assignTags({dispatch, commit}, post) {
+  assignTags({commit}, post) {
     let tagsNames = post.tags.map((tag) => {
       return tag.name;
     });
