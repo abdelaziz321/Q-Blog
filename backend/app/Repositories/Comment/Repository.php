@@ -49,6 +49,8 @@ class Repository extends BaseRepository implements RepositoryInterface
     {
         $offset = ($page - 1) * $limit;
 
+        $userId = resolve(AuthUserRepo::class)->user()->id ?? 0;
+
         return Comment::with(['user'])
             ->whereHas('post', function ($query) use ($slug, $published) {
                 $query->where('slug', $slug);
@@ -59,7 +61,11 @@ class Repository extends BaseRepository implements RepositoryInterface
             ->leftJoin('votes AS total', function ($join) {
                 $join->on('comments.id', '=', 'total.comment_id');
             })
-            ->selectRaw('comments.*, sum(total.vote) AS votes')
+            ->leftJoin('votes AS voted', function ($join) use ($userId) {
+                $join->on('comments.id', '=', 'voted.comment_id')
+                ->where('voted.user_id', $userId);
+            })
+            ->selectRaw('comments.*, sum(total.vote) AS votes, sum(DISTINCT voted.vote) AS voted')
             ->groupBy('comments.id')
             ->orderBy('id', 'desc')
             ->skip($offset)

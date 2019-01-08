@@ -20,6 +20,9 @@ class Repository extends BaseRepository implements RepositoryInterface
         return User::withCount(['posts' => function ($query) {
                 $query->published();
             }])
+            ->whereHas('posts', function ($query) {
+                $query->published();
+            })
             ->where('privilege', '>', 1)
             ->orderBy('posts_count', 'desc')
             ->take($limit)

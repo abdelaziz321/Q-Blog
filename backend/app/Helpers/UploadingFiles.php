@@ -55,10 +55,10 @@ class UploadingFiles
         $extension = $caption->getClientOriginalExtension();
 
         // filename to store
-        $filenameToStore = $filename . '-' . time() . '_' . $extension;
+        $filenameToStore = $filename . '-' . time() . '_.' . $extension;
 
         // resize and upload the caption
-        $captionImage = \Image::make($caption)->fit(1000, 450)->stream();
+        $captionImage = \Image::make($caption)->fit(900, 600)->stream();
         Storage::put('public/posts/captions/' . $filenameToStore, $captionImage);
 
         return $filenameToStore;

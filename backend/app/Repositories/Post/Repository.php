@@ -213,12 +213,14 @@ class Repository extends BaseRepository implements RepositoryInterface
                 $query->published();
             }
 
+            $userId = resolve(AuthUserRepo::class)->user()->id ?? 0;
+
             $this->_record = $query->with(['category', 'author', 'tags'])
                 ->withCount(['comments', 'recommendations'])
                 ->where('slug', $slug)
-                ->leftJoin('recommendations AS recommended', function ($join) {
+                ->leftJoin('recommendations AS recommended', function ($join) use ($userId) {
                     $join->on('posts.id', '=', 'recommended.post_id')
-                    ->where('recommended.user_id', auth()->user()->id ?? 0);
+                    ->where('recommended.user_id', $userId);
                 })
                 ->selectRaw('count(DISTINCT recommended.user_id) AS recommended')
                 ->groupBy('posts.id')

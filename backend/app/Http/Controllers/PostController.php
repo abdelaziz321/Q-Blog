@@ -74,7 +74,7 @@ class PostController extends Controller
     public function postComments(Request $request, string $slug, CommentRepo $commentRepo)
     {
         $comments = $commentRepo->getPostComments(
-            $slug, 8, $request->query('page', 1), true
+            $slug, 5, $request->query('page', 1), true
         );
 
         return CommentResource::collection($comments);

@@ -24,7 +24,7 @@ class CommentResource extends JsonResource
             'id'         => $this->id,
             'body'       => $this->body,
             'votes'      => $this->votes ?? 0,
-            'voted'      => $this->voted,
+            'voted'      => $this->voted ?? 0,
             'created_at' => $createdAt,
             'updated_at' => $updatedAt,
             'user'       => [
