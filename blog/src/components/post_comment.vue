@@ -14,7 +14,6 @@
 			<p class="text-weight-light q-mb-sm">{{ comment.body }}</p>
 			<p class="votes">
 			  <q-btn
-					:disable="comment.voted == 1"
 					:text-color="comment.voted == 1 ? 'positive' : 'tertiary'"
 					flat
 					size="0.8rem"
@@ -22,13 +21,12 @@
 					label="voteup"
 					no-caps
 					icon-right="arrow_drop_up"
-					@click="vote(true)"
+					@click="voting('up')"
 				/>
 				<q-chip dense text-color="tertiary">
 					{{ comment.votes }}
 				</q-chip>
 			  <q-btn
-					:disable="comment.voted == -1"
 					:text-color="comment.voted == -1 ? 'negative' : 'tertiary'"
 					flat
 					size="0.8rem"
@@ -36,7 +34,7 @@
 					label="votedown"
 					no-caps
 					icon="arrow_drop_down"
-					@click="vote(false)"
+					@click="voting('down')"
 				 />
 
 				<q-btn-group v-if="$auth.user().slug === comment.user.slug" flat class="q-ml-lg">
@@ -70,12 +68,8 @@ export default {
 
 
 	methods: {
-		editComment() {
-			// TODO:
-		},
-
 		deleteComment() {
-			let app = this;
+			let vm = this;
 
 			Notify.create({
 			  message: 'Are you sure you want to delete this comment?',
@@ -84,7 +78,7 @@ export default {
 					{
 					  label: 'yes',
 					  handler: () => {
-						  app.deleteCommentHandler();
+						  vm.deleteCommentHandler();
 					  }
 					}
 			  ],
@@ -92,61 +86,47 @@ export default {
 	  },
 
 	  deleteCommentHandler() {
-			this.axios.post('comments/' + this.comment.id, {
-				'_method': 'DELETE'
-			})
-			.then((response) => {
-				this.$emit('deleteComment', this.comment);
-
+			this.$store.dispatch('comments/deleteComment', this.comment)
+			.then(() => {
 				Notify.create({
-					message: 'your comment has beed delete successfully!',
+					message: 'your comment has beed deleted successfully!',
 					type: 'positive',
 					color: 'positive',
 					icon: 'error',
 					position: 'top'
 				});
 			})
-			.catch((error) => {
+			.catch((message) => {
 				Notify.create({
-					message: error.response.data.message,
+					message: message,
+					icon: 'error',
+					position: 'top'
+				});
+			});			
+		},
+
+		voting(vote) {
+			let action = vote;
+			if(this.comment.voted === 1 && vote === 'up'
+			|| this.comment.voted === -1 && vote === 'down') {
+				action = 'del';
+			}
+
+			let payload = {
+				action: action,		// now we have action up|down|del
+				commentId: this.comment.id
+			}
+
+			this.$store.dispatch('comments/voting', payload)
+			.then(() => {
+				Notify.create({
+					message: `the comment has been updated successfully`,
+					type: 'positive',
+					color: 'positive',
 					icon: 'error',
 					position: 'top'
 				});
 			});
-		},
-
-		vote(vote) {
-			let action = vote ? 'vote' : 'unvote';
-			this.axios.post('comments/' + action + '/' + this.comment.id)
-			.then((response) => {
-				Notify.create({
-					message: `the comment has been ${action}ed successfully`,
-					type: 'positive',
-					color: 'positive',
-					icon: 'error',
-					position: 'top'
-				});
-
-				// reset the votes so the user doesn't vote up or down
-				if (this.comment.voted == -1) {
-					this.comment.votes = parseInt(this.comment.votes) + 1;
-				} else if (this.comment.voted == 1) {
-					this.comment.votes = parseInt(this.comment.votes) - 1;
-				}
-
-				// set the user vote => up or down
-				if (action === 'vote') {
-					this.comment.voted = 1;
-				} else {
-					this.comment.voted = -1;
-				}
-
-				// update the total votes
-				this.comment.votes = parseInt(this.comment.votes) + parseInt(this.comment.voted);
-			})
-			.catch((error) => {
-				console.log(error.response);
-			});;
 		}
 	}
 }

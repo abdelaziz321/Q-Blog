@@ -1,5 +1,6 @@
 <template>
-	<form class="search_form" @submit.prevent="">
+	<form class="search_form" @submit.prevent>
+		<!-- search using title && search button -->
 		<div class="main_buttons row q-mb-md">
 			<q-btn
 				class="self-end"
@@ -31,7 +32,7 @@
 			header-class="header"
 		>
 			<div class="q-py-md">
-				<!-- Search fields -->
+				<!-- ======== Search fields[category-author-tags] ======== -->
 				<div class="row q-mb-md">
 					<q-toggle
 						v-model="categoryToggle"
@@ -101,8 +102,9 @@
 					</q-chips-input>
 				</div>
 
-				<!-- ACS && DESC toggles -->
+				<!-- ======== ACS && DESC toggles[recommends-views-comments-dates] ======== -->
 				<div class="row q-mt-xl">
+					<!-- recommends -->
 					<div class="col-sm-6 q-mb-lg">
 						<q-toggle
 							no-focus
@@ -125,6 +127,7 @@
 						/>
 					</div>
 
+					<!-- views -->
 					<div class="col-sm-6 q-mb-lg">
 						<q-toggle
 							v-model="viewsToggle"
@@ -147,6 +150,7 @@
 						/>
 					</div>
 
+					<!-- comments -->
 					<div class="col-sm-6 q-mb-lg">
 						<q-toggle
 							v-model="commentsToggle"
@@ -169,6 +173,7 @@
 						/>
 					</div>
 
+					<!-- dates -->
 					<div class="col-sm-6 q-mb-lg">
 						<q-toggle
 							v-model="dateToggle"
@@ -200,22 +205,22 @@
 export default {
 	data: function () {
 		return {
+			dateToggle: false,
 			tagsToggle: false,
+			viewsToggle: false,
 			authorToggle: false,
+			recommsToggle: false,
 			categoryToggle: false,
 			commentsToggle: false,
-			recommsToggle: false,
-			viewsToggle: false,
-			dateToggle: false,
 
-			title: '',
-			category: '',
-			author: '',
 			tags: [],
-			comments: '',
-			recomms: '',
-			views: '',
 			date: '',
+			views: '',
+			title: '',
+			author: '',
+			recomms: '',
+			category: '',
+			comments: '',
 		};
 	},
 
@@ -252,7 +257,6 @@ export default {
 		searchCategories(category, done) {
 			this.axios.get('/categories/search?q=' + category)
 			.then((response) => {
-				// may be is not the best practice.
 				response.data.forEach((item) => {
 					item.label = item.title;
 				});

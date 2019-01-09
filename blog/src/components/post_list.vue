@@ -1,11 +1,11 @@
 <template>
 	<div class="blog_list overflow-hidden">
-
+		<!-- search posts form -->
 		<search-form @search="search"></search-form>
 
+		<!-- posts list -->
 		<div class="posts gutter-sm row">
 			<card v-for="post in posts" :post="post" :key="post.id" />
-
 			<div
 				v-if="posts.length === 0"
 				class="text-primary text-weight-bold col text-center"
@@ -14,21 +14,23 @@
 			</div>
 		</div>
 
+		<!-- pagination -->
 		<q-pagination
 			v-model="page"
+			:max="totalPosts"
+			@input="setPage"
+			:max-pages="6"
+			ellipses
 			color="primary"
 			class="q-mb-xl q-mt-lg float-right"
 			boundary-links
-			:max="max"
-			:max-pages="6"
-			ellipses
-			@input="setPage"
 		/>
 	</div>
 </template>
+
 <script>
-import Card from './card';
-import SearchForm from './search_form';
+import Card from './post_card';
+import SearchForm from './posts_search';
 
 export default {
 	components: {
@@ -40,11 +42,18 @@ export default {
 	data: function () {
 		return {
 			page: 0,
-			max: 0,
-			posts: [],
-
 			queryString: ''
 		};
+	},
+
+
+	computed: {
+		posts: function() {
+			return this.$store.getters.posts;
+		},
+		totalPosts: function() {
+			return this.$store.getters.totalPosts;
+		}
 	},
 
 
@@ -75,16 +84,9 @@ export default {
 			}
 			query += ('page=' + this.page);
 
-			this.axios.get('/posts?' + query)
-			.then((response) => {
-				let res = response.data;
-				this.posts = res.data;
-				this.max = Math.ceil(res.total / res.per_page);
-
+			this.$store.dispatch('getPosts', query)
+			.then(() => {
 				this.$router.push('posts?' + query);
-			})
-			.catch((error) => {
-				console.log(error);
 			});
 		},
 

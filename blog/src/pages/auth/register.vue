@@ -5,7 +5,7 @@
 
       <q-input type="text" color="primary" float-label="Your username" v-model="username" />
 
-			<q-input type="email"  class="q-mt-ms"color="primary" float-label="your email" v-model="email" />
+			<q-input type="email"  class="q-mt-ms" color="primary" float-label="your email" v-model="email" />
 
       <q-input type="password" class="q-mt-ms" color="primary" float-label="your password" v-model="password" />
 
@@ -38,7 +38,7 @@ export default {
 	mounted: function () {
 		// REVIEW: what i am doing here is ridiculous..
 		// there is no option for autocomplete=false
-		// may be there is a good way to achieve this.
+		// may be there is another way to achieve this.
 		window.setTimeout(() => {
 			this.username = '';
 			this.email = '';
@@ -56,7 +56,6 @@ export default {
 					icon: 'error',
 					position: 'top'
 				});
-
 				return;
 			}
 

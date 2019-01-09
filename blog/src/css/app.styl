@@ -76,6 +76,10 @@ ul.tags {
 
 // sidebar
 .sidebar {
+  background: rgba(255,255,255,.7);
+  padding: 40px 30px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.2);
+
   h6 {
     border-left: 5px solid $tertiary;
   }
@@ -121,6 +125,8 @@ ul.tags {
 
 // Blog list
 .post {
+  background-color: rgba(255,255,255,0.6);
+  box-shadow: 0 0 1px rgba(0,0,0,0.4);
 
   .post_caption {
     width: 100%;
@@ -128,12 +134,13 @@ ul.tags {
 
     time {
       position: absolute;
-      top: 10px;
-      left: 0;
-      background-color: rgba(0,0,0,0.4);
-      padding: 7px 15px;
-      color: #fff;
-      font-size: 0.9em;
+      top: -1px;
+      left: -1px;
+      background-color: $quinary;
+      padding: 10px 15px;
+      color: #988;
+      font-size: 0.8em;
+      box-shadow: 2px 1px 0 rgba(0,0,0,0.1);
     }
 
     img {
@@ -164,6 +171,9 @@ ul.tags {
   .post_footer {
     border-top: 1px solid rgba(0,0,0,0.1);
     font-size: 0.8em;
+    > span {
+      color: #888;
+    }
   }
 }
 
@@ -180,12 +190,17 @@ ul.tags {
     position: relative;
     z-index: 3;
     margin-top: -60px;
+    overflow: hidden;
     background-color: $quinary;
     line-height: 2;
 
     h2 {
       font-size: 1.6em;
       letter-spacing: 1px;
+    }
+
+    img {
+      max-width: 100%;
     }
   }
 

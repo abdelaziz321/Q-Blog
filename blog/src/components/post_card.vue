@@ -1,6 +1,6 @@
 <template>
-	<div class="col-lg-6 ">
-		<div class="bg-white post q-mx-xs q-mb-sm">
+	<div class="col-lg-6">
+		<div class="post q-mx-xs q-mb-sm">
 			<div class="post_caption">
 				<time>{{ post.published_at }}</time>
 				<img :src="caption" alt="post caption">
@@ -29,15 +29,15 @@
 
 			<div class="post_footer text-primary text-center q-px-md q-py-sm">
 				<span class="recommendations float-left">
-					<q-icon name="favorite" size="1.1rem" color="tertiary" />
+					<q-icon name="favorite" size="1.1rem" color="blue-grey-3" />
 					{{ post.total_recommendations }}
 				</span>
 				<span class="views">
-					<q-icon name="visibility" size="1.1rem" color="tertiary" />
+					<q-icon name="visibility" size="1.1rem" color="blue-grey-3" />
 					{{ post.views }}
 				</span>
 				<span class="comments float-right">
-					<q-icon name="comment" size="1.1rem" color="tertiary" />
+					<q-icon name="comment" size="1.1rem" color="blue-grey-3" />
 					{{ post.total_comments }}
 				</span>
 				<div style="clear: both"></div>
@@ -56,15 +56,19 @@
 		],
 
 
-		computed: {
-			caption: function () {
-				let postsPath = this.$baseURL + '/storage/posts/';
-				if (this.post.caption == null) {
-					return postsPath + 'default.jpg';
-				} else {
-					return postsPath + this.post.caption;
-				}
+		data: function () {
+			return {
+				caption: ''
+			};
+		},
+
+
+		watch: {
+			post: function(post) {
+				let postsPath = this.$baseURL + '/storage/posts/captions/';
+				this.caption = post.caption === null ? 
+				postsPath + 'default.jpg' : postsPath + post.caption;
 			}
-		}
+		},
 	}
 </script>

@@ -1,10 +1,13 @@
 <template>
-	<div class="sidebar">
+	<div class="sidebar q-mt-md">
+		<!-- =========== categories =========== -->
 		<div>
 			<h6 class="q-ma-none q-mb-md q-pl-sm text-secondary">Categories:</h6>
 			<ul class="categories q-mt-sm q-mb-xl">
-				<li v-for="category in categories"
-						class="q-py-sm"
+				<li 
+					v-for="category in categories"
+					:key="category.slug"
+					class="q-py-sm"
 				>
 					<router-link :to="'/posts?category=' + category.slug">
 						{{ category.title }}
@@ -14,11 +17,14 @@
 			</ul>
 		</div>
 
+		<!-- =========== tags =========== -->
 		<div>
 			<h6 class="q-ma-none q-mb-md q-pl-sm text-secondary">Tags:</h6>
 			<ul class="tags q-mt-sm q-mb-xl">
-				<li v-for="tag in tags"
-						class="q-py-sm"
+				<li 
+					v-for="tag in tags"
+					:key="tag.slug"
+					class="q-py-sm"
 				>
 					<router-link :to="'/posts?tags[]=' + tag.slug">
 						<q-chip class="q-mr-sm" tag small color="primary">
@@ -29,11 +35,14 @@
 			</ul>
 		</div>
 
+		<!-- =========== authors =========== -->
 		<div>
 			<h6 class="q-ma-none q-mb-md q-pl-sm text-secondary">Authors:</h6>
 			<ul class="authors q-mt-sm q-mb-xl">
-				<li v-for="author in authors"
-						class="q-py-sm"
+				<li 
+					v-for="author in authors"
+					:key="author.slug"
+					class="q-py-sm"
 				>
 					<router-link :to="'/posts?author=' + author.slug">
 						{{ author.username }}
@@ -50,25 +59,21 @@ export default {
 	name: 'side-bar',
 
 
-	data: function () {
-		return {
-			tags: [],
-			authors: [],
-			categories: []
-		};
-	},
+	computed: {
+		tags: function () {
+			return this.$store.getters.popularTags;
+		},
+		authors: function () {
+			return this.$store.getters.popularAuthors;
+		},
+		categories: function () {
+			return this.$store.getters.popularCategories;
+		}
+  },
 
 
 	created: function () {
-		this.axios.get('/sidebar')
-		.then((response) => {
-			this.tags = response.data.tags;
-			this.authors = response.data.authors;
-			this.categories = response.data.categories;
-		})
-		.catch((error) => {
-			console.log(error.response);
-		});
+		this.$store.dispatch('sidebar');
 	}
 }
 </script>

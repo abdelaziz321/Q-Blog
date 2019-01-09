@@ -1,15 +1,11 @@
-import Login from 'pages/auth/login';
-import Register from 'pages/auth/register';
-import Layout from 'layouts/layout.vue';
+import Layout     from 'layouts/layout.vue';
 
-import PostsIndex from 'pages/posts/index';
-import PostsList from 'pages/posts/list';
-import SinglePost from 'pages/posts/single';
-
-import UpdateUser from 'pages/users/update';
-
-import About from 'pages/about';
-import Contact from 'pages/contact';
+import About      from 'pages/about';
+import Contact    from 'pages/contact';
+import Posts      from 'pages/posts';
+import UserUpdate from 'pages/user_update';
+import Login      from 'pages/auth/login';
+import Register   from 'pages/auth/register';
 
 
 const routes = [
@@ -24,15 +20,15 @@ const routes = [
       },
       {
         path: 'posts',
-        component: PostsIndex,
+        component: Posts,
         children: [
           {
             path: '',
-            component: PostsList
+            component: () => import('components/post_list')
           },
           {
             path: ':post',
-            component: SinglePost
+            component: () => import('components/post_single')
           }
         ]
       },
@@ -40,21 +36,10 @@ const routes = [
       // user routes
       {
         path: 'users/update-profile',
-        component: UpdateUser,
+        component: UserUpdate,
         meta: {
           auth: true
-        },
-        // children: [
-        //   // TODO: show the user activities
-        //   // {
-        //   //   path: ':user',
-        //   //   component: User
-        //   // },
-        //   {
-        //     path: 'update-profile',
-        //     component: UpdateUser
-        //   }
-        // ]
+        }
       },
 
       // about and contact

@@ -9,14 +9,14 @@
 			</div>
 		</div>
 
-		<div class="container overflow-hidden">
+		<div class="container overflow-hidden q-mb-xl">
 			<div class="row q-mt-lg gutter-lg">
-				<div class="col-lg-9">
+				<div class="col-lg-8">
 					<!-- single-post|postslist -->
 					<router-view :key="Date.now()"></router-view>
 				</div>
 
-				<div class="col-lg-3">
+				<div class="col-lg-4">
 					<side-bar></side-bar>
 				</div>
 			</div>
@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import SideBar from './sidebar';
+import SideBar from './partials/sidebar';
 
 export default {
 	name: 'posts',
@@ -35,6 +35,3 @@ export default {
 	}
 }
 </script>
-
-<style>
-</style>

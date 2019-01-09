@@ -1,7 +1,7 @@
 {
   "name": "Q-Blog",
   "version": "1.0.0",
-  "description": "the public site of the blog-system",
+  "description": "the public site of the Q-Blog",
   "productName": "Q-Blog",
   "cordovaId": "org.cordova.quasar.app",
   "author": "abdelaziz321 <abdelazizmahmoud321@gmail.com>",
