@@ -174,7 +174,7 @@ const actions = {
     formData.append('title', post.title);
     formData.append('body', post.body);
     
-    if (post.caption !== undefined) {
+    if (typeof post.caption !== undefined) {
       formData.append('caption', post.caption);
     }
     

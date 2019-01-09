@@ -99,12 +99,7 @@ export default {
       isLoadingTag: false,
       isLoadingCategory: false,
 
-      postForm: {
-        title: '',
-        body: '',
-        category: '',
-        tags: []
-      },
+      postForm: {},
 
       buttons: [
         'bold', 'strikethrough', 'underline', 'italic', '|',
@@ -138,7 +133,12 @@ export default {
     // new form
     if (typeof this.$route.params.post === 'undefined') {
       this.formHeader = 'New Post';
-      this.postForm = {};
+      this.postForm = {
+        title: '',
+        body: '',
+        category: '',
+        tags: []
+      };
       return;
     }
 
@@ -228,7 +228,7 @@ export default {
     },
 
     save () {
-      // add the div.body-wrapper when update of create new post
+      // add the div.body-wrapper when update or create new post
       if (this.postForm.body.substr(0, 26) !== '<div class="body-wrapper">') {
         this.postForm.body = '<div class="body-wrapper">' + this.postForm.body + '</div>';
       }
