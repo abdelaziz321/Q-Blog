@@ -6,15 +6,13 @@
 
 \- Feel free to copy, read, fork, or whatever you want.
 
-<br />
-
----
+------
 
 ## Overview:
 
 \- The repository consists of 3 main directories with 3 applications.
 
-#### `backend` directory:
+#### :arrow_forward: backend directory:
 
 \- Contains the REST API, where you can find implementation for different concepts like:
 
@@ -27,9 +25,7 @@
 
 > If you are using **postman**, you can use the collection `./dev/requirements/Q-Blog.postman_collection.json` 
 
-<br />
-
-#### `blog` and `admin-panel` directories:
+#### :arrow_forward: blog and admin-panel directories:
 
 \- Contains the **public site** and the **admin panel** apps.
 
@@ -44,9 +40,7 @@
 
 \- The public site was built using quasar.
 
-<br />
-
----
+------
 
 \- You can find the Installation steps [here](https://github.com/abdelaziz321/Q-Blog/wiki/Installation).
 
@@ -61,9 +55,7 @@ let userCredentials = {
 
 **Happy Coding :slightly_smiling_face:**.
 
-<br />
-
----
+------
 
 ## Screenshots:
 
@@ -77,12 +69,10 @@ let userCredentials = {
 
 ![single](./.dev/screenshots/single_post.jpg)
 
-<br />
-
----
-
+------
 
 ## Ask a Question?
 
 If you have any question, contact me via my email:
+
 > abdelazizmahmoud321@gmail.com
