@@ -2,7 +2,7 @@
 
 \- A very simple Blog with Admin Panel built using [**Laravel5.6**,  **VueJs2.5**,  **Quasar0.17**].
 
-\- This is kind of implementation on courses, tutorials and articles for different concepts in web development.
+\- This is kind of implementation on different concepts in web development.
 
 \- Feel free to copy, read, fork, or whatever you want.
 
