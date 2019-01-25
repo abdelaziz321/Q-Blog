@@ -55,6 +55,12 @@ let userCredentials = {
 
 **Happy Coding :slightly_smiling_face:**.
 
+---
+
+## Database Diagram:
+
+![single](./.dev/requirements/database-blog-model.png)
+
 ------
 
 ## Screenshots:
