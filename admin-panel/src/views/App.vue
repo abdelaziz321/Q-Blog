@@ -12,13 +12,13 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarResponsive">
-        <sidebar></sidebar>
-        <navbar></navbar>
+        <sidebar />
+        <navbar />
       </div>
     </nav>
 
     <!-- notifications message -->
-    <message></message>
+    <message />
 
     <!-- main wrapper -->
     <div class="content-wrapper">
@@ -33,6 +33,8 @@
       <foooter></foooter>
     </div>
 
+    <chat />
+
     <!-- form modal -->
     <modal></modal>
   </div>
@@ -43,11 +45,12 @@ import Sidebar from './partials/sidebar';
 import Foooter from './partials/footer';
 import Modal from './partials/notifications/modal';
 import Message from './partials/notifications/message';
+import Chat from '@/components/chat';
 
 
 export default {
   components: {
-    Navbar, Sidebar, Foooter, Modal, Message
+    Navbar, Sidebar, Foooter, Modal, Message, Chat
   },
 
 

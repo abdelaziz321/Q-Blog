@@ -15,6 +15,11 @@ import './assets/js/fontawesome.js';
 import Vue from 'vue';
 window.Vue = Vue;
 
+
+import VueFire from 'vuefire';
+Vue.use(VueFire);
+
+
 import axios from 'axios';
 import VueAxios from 'vue-axios';
 Vue.use(VueAxios, axios);

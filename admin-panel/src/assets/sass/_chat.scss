@@ -1,0 +1,91 @@
+.chat {
+  position: fixed;
+  right: 50px;
+  bottom: 0;
+  z-index: 100;
+  width: 350px;
+  height: 45vh;
+  min-height:400px;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 0 13px rgba(0,0,0,0.2);
+  border-radius: 7px 7px 0 0;
+
+  h4.header {
+    position: relative;
+    height: 40px;
+    margin: 0;
+    padding: 11px 15px;
+    font-weight: 900;
+    font-size: 1em;
+    color: rgba(255, 255, 255, 0.8);
+    background-color: $gray-800;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  ul.messages {
+    height: calc(100% - 80px);
+    overflow: auto;
+    list-style-type: none;
+    padding: 20px 8px 20px 15px;
+    margin: 0;
+
+    li {
+      img {
+        min-width: 30px;
+        width: 30px;
+        margin-top: 15px;
+        align-self: flex-start;
+      }
+
+      .details {
+        margin: 11px 10px 0 10px;
+
+        h6 {
+          font-size: 0.9em;
+          text-align: left;
+          margin-bottom: 4px;
+          font-weight: 900;
+          color: $gray-500;
+        }
+
+        p {
+          font-size: 0.9em;
+          padding: 5px 10px;
+          background-color: $primary;
+          color: $gray-200;
+          border-radius: 0 10px 10px 10px;
+        }
+      }
+
+      &.flex-row-reverse {
+        h6 {
+          text-align: right;
+        }
+
+        p {
+          color: $gray-600;
+          background-color: $gray-100;
+          border-radius: 10px 0 10px 10px;
+        }
+      }
+    }
+  }
+
+  form.chat_form {
+    position: relative;
+    box-shadow: 0 -1px 1px rgba(0,0,0,0.2);
+
+    > textarea {
+      height: 40px;
+      resize: none;
+      overflow: hidden;
+      border-width: 0 !important;
+      box-shadow: 0 0 0 !important;
+    }
+
+    > button.send_btn {
+      border-radius: 0;
+    }
+  }  
+}
