@@ -51,6 +51,7 @@ Route::namespace('Admin')->prefix('admin')->middleware('auth:api')->group(functi
 
 
     // ==== users routes
+    Route::get('users/list', 'UserController@list');
     Route::get('users/search', 'UserController@search');
 
     Route::post('users/{user}/assign-role', 'UserController@assignRole');
