@@ -50,8 +50,12 @@ Route::namespace('Admin')->prefix('admin')->middleware('auth:api')->group(functi
     ]);
 
 
+    // ==== chat routes
+    Route::get('chat/users', 'ChatController@users');
+    Route::post('chat/message', 'ChatController@message');
+
+
     // ==== users routes
-    Route::get('users/list', 'UserController@list');
     Route::get('users/search', 'UserController@search');
 
     Route::post('users/{user}/assign-role', 'UserController@assignRole');

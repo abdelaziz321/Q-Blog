@@ -64,28 +64,6 @@ class UserController extends Controller
     }
 
     /**
-     * get the {id, username, avater} of each given user id.
-     *
-     * @param array $_GET['id'] array of users ids
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function list(Request $request)
-    {
-        $this->authorize('viewUsers', 'App\\User');
-
-        $userIds = $request->validate([
-            'ids'   => 'required|array',
-            'ids.*' => 'integer'
-        ])['ids'];
-
-        $users = $this->authUserRepo->getUsers($userIds);
-
-        return UserSearchResource::collection($users);
-    }
-
-    /**
      * get the $slug user.
      *
      * @param  string $slug
