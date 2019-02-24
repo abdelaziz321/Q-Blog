@@ -33,7 +33,14 @@
       <foooter></foooter>
     </div>
 
-    <chat />
+    <chat v-if="chatOpenned" />
+
+    <div v-else class="chat text-secondary hide">
+      <h4 class="header" @click="chatOpenned = true">
+        <font-awesome-icon icon="globe" />
+        chat with authors
+      </h4>
+    </div>
 
     <!-- form modal -->
     <modal></modal>
@@ -51,6 +58,13 @@ import Chat from '@/components/chat';
 export default {
   components: {
     Navbar, Sidebar, Foooter, Modal, Message, Chat
+  },
+
+
+  data: function () {
+    return {
+      chatOpenned: false
+    }
   },
 
 
