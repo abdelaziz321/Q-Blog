@@ -12,7 +12,7 @@
             <button 
               v-else
               :class="{'d-none': isMessagesLoading}"
-              @click="loadMessages"
+              @click="loadPreviousMessages"
               type="button"
             >load more messages</button>
           </div>
@@ -40,8 +40,8 @@
 
       </ul>
 
-      <form class="chat_form d-flex" @submit.prevent="send">
-        <textarea class="form-control send_message" v-model="form.message" placeholder="send a message"></textarea>
+      <form class="chat_form d-flex" @submit.prevent="sendMessage">
+        <textarea class="form-control send_message" v-model="form.body" placeholder="send a message"></textarea>
         <button class="btn btn-primary send_btn" type="submit">
           <font-awesome-icon icon="paper-plane" />
         </button>
@@ -50,6 +50,8 @@
 </template>
 
 <script>
+import firebase from 'firebase/app';
+
 export default {
   name: 'chat',
 
@@ -57,7 +59,7 @@ export default {
   data: function () {
     return {
       form: {
-        message: ''
+        body: ''
       },
 
       isChatEnded: false,
@@ -86,13 +88,21 @@ export default {
 
 
   methods: {
-    loadMessages() {
+    loadPreviousMessages() {
       this.isMessagesLoading = true;
       this.$store.dispatch('chat/getMessages')
       .then((noMoreMessages) => {
         this.isChatEnded = noMoreMessages;
         this.isMessagesLoading = false;
       });
+    },
+
+    sendMessage() {
+      this.$store.dispatch('chat/send', {
+      body: this.form.body,
+      user_id: this.$auth.user().id,
+      created: firebase.firestore.Timestamp.fromDate(new Date())
+    });
     }
   }
 }

@@ -1,6 +1,4 @@
 import axios from 'axios';
-import { db } from '@/config/db.js';
-import firebase from 'firebase/app';
 
 const LIMIT = 5;
 
@@ -144,6 +142,18 @@ const actions = {
       let res = response;
       commit('ADD_USERS', res.data);
       commit('UPDATE_MESSAGES_USERS', messages);
+    });
+  },
+
+  // TODO: I think we should use the route '/admin/chat/message'
+  // So we authorize only the authors and moderators to add messages.
+  send({}, message) {
+    db.collection("messages").add(message)
+    .then(function (message) {
+      console.log("Document successfully written!" + message.id);
+    })
+    .catch(function (error) {
+      console.error("Error writing document: ", error);
     });
   }
 }
