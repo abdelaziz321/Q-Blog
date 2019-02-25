@@ -99,10 +99,10 @@ export default {
 
     sendMessage() {
       this.$store.dispatch('chat/send', {
-      body: this.form.body,
-      user_id: this.$auth.user().id,
-      created: firebase.firestore.Timestamp.fromDate(new Date())
-    });
+        body: this.form.body,
+        user_id: this.$auth.user().id,
+        created: firebase.firestore.Timestamp.fromDate(new Date())
+      });
     }
   }
 }

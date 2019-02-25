@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { db } from '@/config/db.js';
 
 const LIMIT = 5;
 

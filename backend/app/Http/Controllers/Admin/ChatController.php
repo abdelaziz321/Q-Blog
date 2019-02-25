@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserSearchResource;
 use App\Repositories\User\RepositoryInterface as UserRepo;
+use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
 class ChatController extends Controller
 {
@@ -32,15 +33,27 @@ class ChatController extends Controller
     }
 
     /**
-     * add a new message to the chat.
+     * add a new message to the firestore.
      *
-     * @param array $_GET['body']
+     * @param array $_GET['message']
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function message(Request $request)
+    public function message(Request $request, AuthUserRepo $authUserRepo)
     {
-        return $request->all();
+        // REVIEW: we may change this later but it accomplish the same target
+        $this->authorize('viewUsers', 'App\\User');
+
+        $request->validate([
+            'message' => 'required|string'
+        ]);
+
+        // send the message to firestore db
+        
+
+        return response()->json([
+            'message' => 32
+        ], 200);
     }
 }
