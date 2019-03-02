@@ -75,17 +75,6 @@ class Repository extends BaseRepository implements RepositoryInterface
     }
 
     /**
-     * get the users of the given ids
-     *
-     * @param  array $ids  the ids of the users
-     * @return Illuminate\Database\Eloquent\Collection
-     */
-    public function getUsers(array $ids)
-    {
-        return User::findOrFail($ids);
-    }
-
-    /**
      * search authors using their username & email
      *
      * @param  string $q the string by which we will search

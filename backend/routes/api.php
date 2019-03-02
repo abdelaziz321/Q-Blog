@@ -51,8 +51,8 @@ Route::namespace('Admin')->prefix('admin')->middleware('auth:api')->group(functi
 
 
     // ==== chat routes
-    Route::get('chat/users', 'ChatController@users');
-    Route::post('chat/message', 'ChatController@message');
+    Route::get('messages', 'ChatController@fetchMessages');
+    Route::post('messages', 'ChatController@sendMessage');
 
 
     // ==== users routes

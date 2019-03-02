@@ -2,58 +2,60 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\MessageSent;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\UserSearchResource;
-use App\Repositories\User\RepositoryInterface as UserRepo;
+use App\Http\Resources\MessageResource;
+use App\Repositories\Chat\RepositoryInterface as ChatRepo;
 use App\Repositories\User\AuthRepositoryInterface as AuthUserRepo;
 
 class ChatController extends Controller
 {
-    /**
-     * get the {id, username, avater} of each given user id.
-     *
-     * @param array $_GET['ids'] array of users ids
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function users(Request $request, UserRepo $userRepo)
+    private $chatRepo;
+
+    public function __construct(ChatRepo $chatRepo)
     {
-        $this->authorize('viewUsers', 'App\\User');
-
-        $userIds = $request->validate([
-            'ids'   => 'required|array',
-            'ids.*' => 'integer'
-        ])['ids'];
-
-        $users = $userRepo->getUsers($userIds);
-
-        return UserSearchResource::collection($users);
+        $this->chatRepo = $chatRepo;
     }
 
     /**
-     * add a new message to the firestore.
-     *
-     * @param array $_GET['message']
+     * get the chat messages.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function message(Request $request, AuthUserRepo $authUserRepo)
+    public function fetchMessages(Request $request)
     {
-        // REVIEW: we may change this later but it accomplish the same target
+        $messages = $this->chatRepo->getPaginatedMessages(
+            $request->query('limit', 5),
+            $request->query('id', 0)
+        );
+
+        return MessageResource::collection($messages);
+    }
+
+    /**
+     * add a new message to the authors chat.
+     *
+     * @param string $_GET['message']
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function sendMessage(Request $request, AuthUserRepo $authUserRepo)
+    {
         $this->authorize('viewUsers', 'App\\User');
 
-        $request->validate([
+        $message = $request->validate([
             'message' => 'required|string'
-        ]);
+        ])['message'];
 
-        // send the message to firestore db
-        
+        $this->chatRepo->create($message);
 
-        return response()->json([
-            'message' => 32
-        ], 200);
+        broadcast(
+            new MessageSent($authUserRepo->user(), $message)
+        )->toOthers();
+
+        return response()->json([], 200);
     }
 }
