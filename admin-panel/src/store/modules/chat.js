@@ -1,160 +1,109 @@
 import axios from 'axios';
-import { db } from '@/config/db.js';
+import Echo from 'laravel-echo';
 
-const LIMIT = 5;
+const Pusher = require('pusher-js');
+
+const echo = new Echo({
+  broadcaster: 'pusher',
+  key: '468adb0d5808c1',
+  wsHost: '127.0.0.1',
+  httpHost: '127.0.0.1',
+  wsPort: 6001,
+  disableStats: true,
+  encrypted: false,
+  auth: {
+    headers: {
+      'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+    }
+  },
+  enabledTransports: ['ws', 'wss']
+});
+
+echo.connector.pusher.config.authEndpoint = `http://127.0.0.1:8000/broadcasting/auth`;
+
+const LIMIT = 10;
 
 // initial state
 const state = {
   messages: [],
-  firstMessage: null,  // refers to the message at the top of our chat
-  lastMessage: null,   // refers to the message at the bottom of our chat
-  
-  users: new Map()
+  firstMessage: 0,  // refers to the message id at the top of our chat
+
+  // we will change its value each time a new message retrieved
+  newMessageFlag: false
 }
 
 // getters
 const getters = {
   messages: (state) => {
     return state.messages;
+  },
+
+  newMessage: (state) => {
+    return state.newMessageFlag;
   }
 }
 
 // mutations
 const mutations = {
-  ADD_USERS(state, users) {
-    users.forEach((user) => {
-      state.users.set(user.id, {
-        name: user.username,
-        avatar: user.avatar
-      });
-    });    
-  },
-  
   ADD_MESSAGES(state, messages) {
-    messages.forEach((message) => {   // (doc)
-      state.messages.unshift({
-        id: message.id,
-        body: message.data().body,
-        user_id: message.data().user_id
-      });
-    });
-  },
-
-  ADD_MESSAGE(state, message) {
-    state.messages.push({
-      id: message.id,
-      body: message.data().body,
-      user_id: message.data().user_id
-    })
-  },
-
-  // TODO: only add the user for the retrieved messages
-  UPDATE_MESSAGES_USERS(state, messages) {
-    state.messages.forEach((message, index) => {
-      if (typeof message.user !== 'undefined') {
-        return;
-      }
-
-      message.user = state.users.get(message.user_id);
-      Vue.set(state.messages, index, message);
+    messages.forEach((message) => {
+      state.messages.unshift(message);
     });
   },
 
   UPDATE_FIRST_MESSAGE(state, messages) {
-    state.firstMessage = messages.docs[messages.docs.length - 1];
+    state.firstMessage = messages[messages.length - 1].id;
   },
-  
-  UPDATE_LAST_MESSAGE(state, messages) {
-    state.lastMessage = messages.docs[0];
+
+  ADD_MESSAGE(state, message) {
+    state.messages.push(message);
+  },
+
+  ADD_MESSAGE(state, message) {
+    state.messages.push(message);
+    state.newMessageFlag = !state.newMessageFlag;
   }
 }
 
 // actions
 const actions = {
   getMessages({ state, commit, dispatch }) {
-    let query = db.collection('messages')
-      .orderBy("created", "desc");
+    let params = `?limit=${LIMIT}`;
 
-    if (state.firstMessage !== null) {
-      query = query.startAfter(state.firstMessage);
+    if (state.firstMessage !== 0) {
+      params += `&id=${state.firstMessage}`
     }
 
-    return query.limit(LIMIT).get()
-      .then((messages) => {     // querySnapshot
-        commit('ADD_MESSAGES', messages);
+    return axios.get(`/admin/messages${params}`)
+      .then((response) => {
+        let messages = response.data;
 
-        commit('UPDATE_LAST_MESSAGE', messages);
+        commit('ADD_MESSAGES', messages);
         commit('UPDATE_FIRST_MESSAGE', messages);
 
-        dispatch('getUsers', messages);
-        return messages.docs.length < LIMIT;
+        return messages.length < LIMIT;
       });
   },
 
-  // TODO: react to every new message and notify somehow to our user
-  getNewMessages({ commit, dispatch }) {
-    db.collection("messages")
-      .orderBy("created", "asc")
-      .startAfter(state.lastMessage)
-      .onSnapshot(function (snapshot) {
-        snapshot.docChanges().forEach(function (change) {
-          if (change.type === "added") {
-            let message = change.doc;
-            if (message.exists) {
-              commit('ADD_MESSAGE', message);
-              dispatch('getUsers', [message]);
-            }
-          }
-        });
+  listenToNewMessages({ state, commit, dispatch }) {
+    echo.private('authors-chat')
+      .listen('.message.sent', (message) => {
+        commit('ADD_MESSAGE', message);
       });
   },
 
-  getUsers({ state, commit }, messages) {
-    // get the users ids from the retrieved messages
-    let usersIds = new Set();
-    messages.forEach((message) => {
-      usersIds.add(message.data().user_id);
-    });
-
-    // get the users ids that we dont have them in the current state
-    let missidUsers = [];
-    usersIds.forEach((id) => {
-      if (!state.users.has(id)) {
-        missidUsers.push(id);
+  send({commit}, message) {
+    return axios.post(`/admin/messages`, {
+      message: message
+    },
+    {
+      headers: {
+        "X-Socket-Id": echo.socketId(),
       }
-    });
-
-    // there is no need to get users from API,
-    // just update messages users from our Map
-    if (missidUsers.length === 0) {
-      commit('UPDATE_MESSAGES_USERS', messages);
-      return;
-    }
-
-    // build the query to get the missed users from our API
-    let query = '';
-    missidUsers.forEach((id) => {
-      query += `ids[]=${id}&`;
-    });
-    query = query.substr(0, query.length - 1);
-    
-    return axios.get('/admin/chat/users?' + query)
-    .then((response) => {
-      let res = response;
-      commit('ADD_USERS', res.data);
-      commit('UPDATE_MESSAGES_USERS', messages);
-    });
-  },
-
-  // TODO: I think we should use the route '/admin/chat/message'
-  // So we authorize only the authors and moderators to add messages.
-  send({}, message) {
-    db.collection("messages").add(message)
-    .then(function (message) {
-      console.log("Document successfully written!" + message.id);
     })
-    .catch(function (error) {
-      console.error("Error writing document: ", error);
+    .then((response) => {
+      let message = response.data;
+      commit('ADD_MESSAGE', message);
     });
   }
 }

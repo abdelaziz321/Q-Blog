@@ -9,7 +9,7 @@
         <li class="d-flex">
           <div class="messages_status">
             <span v-if="isChatEnded">no more messages</span>
-            <button 
+            <button
               v-else
               :class="{'d-none': isMessagesLoading}"
               @click="loadPreviousMessages"
@@ -19,22 +19,22 @@
         </li>
 
         <li
-          v-for="message in messages" 
+          v-for="message in messages"
           :key="message.id"
           class="d-flex"
-          :class="message.user_id == $auth.user().id ? '' : 'flex-row-reverse'"
+          :class="message.user.slug == $auth.user().slug ? '' : 'flex-row-reverse'"
         >
-          <img 
+          <img
             alt="avatar"
-            :src="`${$baseURL}/storage/users/` + 
+            :src="`${$baseURL}/storage/users/` +
               (
-                typeof message.user === 'undefined' || message.user.avatar === null ? 
+                typeof message.user === 'undefined' || message.user.avatar === null ?
                 'avatar.svg' : message.user.avatar
               )"
           />
           <div class="details">
             <h6>{{ typeof message.user === 'undefined' ? 'someone' : message.user.name }}</h6>
-            <p>{{ message.body }}</p>
+            <p>{{ message.message }}</p>
           </div>
         </li>
 
@@ -50,7 +50,6 @@
 </template>
 
 <script>
-import firebase from 'firebase/app';
 
 export default {
   name: 'chat',
@@ -72,18 +71,29 @@ export default {
   computed: {
     messages: function () {
       return this.$store.getters['chat/messages'];
-    }
+    },
+
+		newMessage: function () {
+			return this.$store.getters['chat/newMessage'];
+		}
   },
 
+	watch: {
+    newMessage: function (val) {
+			this.$nextTick(() => {
+				this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+      });
+     }
+  },
 
   created() {
     this.$store.dispatch('chat/getMessages')
-    .then((noMoreMessages) => {
-      this.isChatEnded = noMoreMessages;
-      this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
-      this.$store.dispatch('chat/getNewMessages');
-      this.isMessagesLoading = false;
-    });
+	    .then((noMoreMessages) => {
+	      this.isChatEnded = noMoreMessages;
+	      this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+	      this.$store.dispatch('chat/listenToNewMessages');
+	      this.isMessagesLoading = false;
+	    });
   },
 
 
@@ -91,18 +101,18 @@ export default {
     loadPreviousMessages() {
       this.isMessagesLoading = true;
       this.$store.dispatch('chat/getMessages')
-      .then((noMoreMessages) => {
-        this.isChatEnded = noMoreMessages;
-        this.isMessagesLoading = false;
-      });
+	      .then((noMoreMessages) => {
+	        this.isChatEnded = noMoreMessages;
+	        this.isMessagesLoading = false;
+	      });
     },
 
     sendMessage() {
-      this.$store.dispatch('chat/send', {
-        body: this.form.body,
-        user_id: this.$auth.user().id,
-        created: firebase.firestore.Timestamp.fromDate(new Date())
-      });
+      this.$store.dispatch('chat/send', this.form.body)
+				.then(() => {
+					this.form.body = '';
+					this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+				});
     }
   }
 }
