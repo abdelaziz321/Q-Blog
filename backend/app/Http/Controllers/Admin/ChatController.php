@@ -56,6 +56,6 @@ class ChatController extends Controller
             new MessageSent($authUserRepo->user(), $message)
         )->toOthers();
 
-        return response()->json([], 200);
+        return new MessageResource($message);
     }
 }
