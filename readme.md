@@ -1,6 +1,6 @@
 # Q-Blog
 
-\- A very simple Blog with Admin Panel built using [**Laravel5.6**,  **VueJs2.5**,  **Quasar0.17**].
+\- A very simple Blog with Admin Panel built using [**Laravel5.7**,  **VueJs2.5**,  **Quasar0.17**].
 
 \- This is kind of implementation on different concepts in web development.
 
@@ -21,6 +21,7 @@
 - Repository Pattern to split the database logic from the business logic.
 - Uploading  and manipulate images using `intervention/image`.
 - Upload post with many images as the body of the post.
+- Using `laravel-websocket` to create a simple real time chat application.
 - Unit testing [soon - contributions are welcomed].
 
 > If you are using **postman**, you can use the collection `./dev/requirements/Q-Blog.postman_collection.json` 
@@ -76,7 +77,6 @@ let userCredentials = {
 ![single](./.dev/screenshots/single_post.jpg)
 
 ![chat](./.dev/screenshots/chat.png)
-
 
 ------
 
