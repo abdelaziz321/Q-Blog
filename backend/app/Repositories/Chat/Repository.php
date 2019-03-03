@@ -38,7 +38,7 @@ class Repository extends BaseRepository implements RepositoryInterface
      * create a new message
      *
      * @param  string $message the body of the message
-     * @return void
+     * @return \stdClass
      */
     public function create(string $message)
     {
@@ -48,5 +48,7 @@ class Repository extends BaseRepository implements RepositoryInterface
         $messageModel->message = $message;
         $messageModel->user_id = $user->id;
         $messageModel->save();
+
+        return $messageModel;
     }
 }

@@ -46,11 +46,11 @@ class ChatController extends Controller
     {
         $this->authorize('viewUsers', 'App\\User');
 
-        $message = $request->validate([
+        $body = $request->validate([
             'message' => 'required|string'
         ])['message'];
 
-        $this->chatRepo->create($message);
+        $message = $this->chatRepo->create($body);
 
         broadcast(
             new MessageSent($authUserRepo->user(), $message)
