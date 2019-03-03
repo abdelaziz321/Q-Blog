@@ -12,13 +12,13 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarResponsive">
-        <sidebar></sidebar>
-        <navbar></navbar>
+        <sidebar />
+        <navbar />
       </div>
     </nav>
 
     <!-- notifications message -->
-    <message></message>
+    <message />
 
     <!-- main wrapper -->
     <div class="content-wrapper">
@@ -33,6 +33,15 @@
       <foooter></foooter>
     </div>
 
+    <chat v-if="chatOpenned" />
+
+    <div v-else class="chat text-secondary hide">
+      <h4 class="header" @click="chatOpenned = true">
+        <font-awesome-icon icon="globe" />
+        chat with authors
+      </h4>
+    </div>
+
     <!-- form modal -->
     <modal></modal>
   </div>
@@ -43,11 +52,19 @@ import Sidebar from './partials/sidebar';
 import Foooter from './partials/footer';
 import Modal from './partials/notifications/modal';
 import Message from './partials/notifications/message';
+import Chat from '@/components/chat';
 
 
 export default {
   components: {
-    Navbar, Sidebar, Foooter, Modal, Message
+    Navbar, Sidebar, Foooter, Modal, Message, Chat
+  },
+
+
+  data: function () {
+    return {
+      chatOpenned: false
+    }
   },
 
 

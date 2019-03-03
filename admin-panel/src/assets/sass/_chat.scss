@@ -1,0 +1,120 @@
+.chat {
+  position: fixed;
+  right: 50px;
+  bottom: 0;
+  z-index: 100;
+  width: 350px;
+  height: 45vh;
+  min-height:400px;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 0 13px rgba(0,0,0,0.2);
+  border-radius: 7px 7px 0 0;
+  transition: all 0.4s ease;
+
+  &.hide {
+    min-height: 0;
+    height: 40px !important;
+  }
+
+  h4.header {
+    position: relative;
+    height: 40px;
+    margin: 0;
+    padding: 11px 15px;
+    font-weight: 900;
+    font-size: 1em;
+    color: rgba(255, 255, 255, 0.8);
+    background-color: $gray-800;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    cursor: pointer;
+  }
+
+  ul.messages {
+    height: calc(100% - 80px);
+    overflow: auto;
+    list-style-type: none;
+    padding: 10px 7px 15px 12px;
+    margin: 0;
+
+    li {
+      div.messages_status {
+        width: 100%;
+        padding: 5px;
+        background-color: #e9ecef;
+        text-align: center;
+        font-size: 0.8em;
+        margin-bottom: 15px;
+  
+        > button {
+          border-width: 0;
+          background-color: transparent;
+          cursor: pointer;
+        }
+      }
+
+      img {
+        min-width: 35px;
+        width: 35px;
+        margin-top: 15px;
+        border-radius: 50%;
+        align-self: flex-start;
+        box-shadow: 0 5px 0 $gray-200;
+      }
+
+      .details {
+        margin: 11px 7px 0 7px;
+
+        h6 {
+          font-size: 0.7em;
+          text-align: left;
+          margin-bottom: 4px;
+          font-weight: 900;
+          color: $gray-600;
+        }
+
+        p {
+          overflow-wrap: anywhere;
+          font-size: 0.9em;
+          padding: 5px 10px;
+          background-color: $primary;
+          color: $gray-200;
+          border-radius: 0 10px 10px 10px;
+        }
+      }
+
+      &.flex-row-reverse {
+        h6 {
+          text-align: right;
+        }
+
+        p {
+          color: $gray-600;
+          background-color: $gray-100;
+          border-radius: 10px 0 10px 10px;
+        }
+      }
+    }
+  }
+
+  form.chat_form {
+    position: relative;
+    border-style: solid;
+    border-color: $gray-200;
+    border-width: 2px 0;
+
+    > textarea {
+      height: 35px;
+      resize: none;
+      overflow: hidden;
+      padding: 7px 12px;
+      border-width: 0 !important;
+      box-shadow: 0 0 0 !important;
+    }
+
+    > button.send_btn {
+      height: 35px;
+      border-radius: 0;
+    }
+  }  
+}

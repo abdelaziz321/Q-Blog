@@ -15,6 +15,7 @@ import './assets/js/fontawesome.js';
 import Vue from 'vue';
 window.Vue = Vue;
 
+
 import axios from 'axios';
 import VueAxios from 'vue-axios';
 Vue.use(VueAxios, axios);

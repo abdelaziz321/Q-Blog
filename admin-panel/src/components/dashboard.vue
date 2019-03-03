@@ -77,9 +77,6 @@
         </div>
       </div>
     </div>
-    <div class="chat text-center text-secondary" style="height:500px;background-color:#e9ecef;margin:30px 0;padding-top:200px">
-      // <strong class="text-primary">TODO:</strong> Chat between authors, moderators and admins
-    </div>
   </div>
 </template>
 
