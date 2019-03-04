@@ -21,23 +21,10 @@ feel free to contribute, copy, read or use it in whatever you want.
                   => moderator can see the comments in its category and also can delete them.
 
     > chat:
-        - our chat will be between the authors and moderators of our site.
+        - our simple chat will be between the authors and moderators of our site.
         - first the user will click a button to open the chat component.
         - we will make a request to get the latest 5 messages.
-        - user can scroll up to get the previous message
-        - user can enter a new message.
-
-            > the problem is that: our chat is depending in 2 separate databases:
-                - mysql: where our users are stored.
-                - firestore: where our messages are stored {each message has user_id}
-
-            > so the solution we are going to implement is:
-                1- we will retrieve the latest 5 messages from firestore.
-                2- send api request to get the users info array of {id, username, avatar}.
-                3- store the retrieved users inside a Map.
-                4- listen to firestore and each time a new message retrieved.
-                    - get the user from our Map if exists.
-                    - other wise make an API request to get the new user.
+        - user can scroll up to get the previous message.
 
   2- the regular site for all users:
     > show all the published posts with a filter input.
