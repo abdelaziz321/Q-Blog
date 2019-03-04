@@ -73,27 +73,27 @@ export default {
       return this.$store.getters['chat/messages'];
     },
 
-		newMessage: function () {
-			return this.$store.getters['chat/newMessage'];
-		}
+    newMessage: function () {
+      return this.$store.getters['chat/newMessage'];
+    }
   },
 
-	watch: {
+  watch: {
     newMessage: function (val) {
-			this.$nextTick(() => {
-				this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+      this.$nextTick(() => {
+        this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
       });
-     }
+    }
   },
 
   created() {
     this.$store.dispatch('chat/getMessages')
-	    .then((noMoreMessages) => {
-	      this.isChatEnded = noMoreMessages;
-	      this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
-	      this.$store.dispatch('chat/listenToNewMessages');
-	      this.isMessagesLoading = false;
-	    });
+      .then((noMoreMessages) => {
+        this.isChatEnded = noMoreMessages;
+        this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+        this.$store.dispatch('chat/listenToNewMessages');
+        this.isMessagesLoading = false;
+      });
   },
 
 
@@ -101,18 +101,18 @@ export default {
     loadPreviousMessages() {
       this.isMessagesLoading = true;
       this.$store.dispatch('chat/getMessages')
-	      .then((noMoreMessages) => {
-	        this.isChatEnded = noMoreMessages;
-	        this.isMessagesLoading = false;
-	      });
+        .then((noMoreMessages) => {
+          this.isChatEnded = noMoreMessages;
+          this.isMessagesLoading = false;
+        });
     },
 
     sendMessage() {
       this.$store.dispatch('chat/send', this.form.body)
-				.then(() => {
-					this.form.body = '';
-					this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
-				});
+        .then(() => {
+          this.form.body = '';
+          this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+        });
     }
   }
 }
