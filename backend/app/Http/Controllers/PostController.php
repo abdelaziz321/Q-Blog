@@ -59,6 +59,8 @@ class PostController extends Controller
     public function show(string $slug)
     {
         $post = $this->postRepo->getPost($slug, true);
+        $post->views = $post->views + 1;
+        $post->save();
 
         return response()->json([
             'post' => new PostResource($post)

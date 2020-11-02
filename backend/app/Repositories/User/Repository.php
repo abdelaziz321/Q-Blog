@@ -122,7 +122,7 @@ class Repository extends BaseRepository implements RepositoryInterface
             'email'       => $userData['email'],
             'password'    => \Hash::make($userData['password']),
             'privilege'   => 1,
-            'description' => $userData['description']
+            'description' => isset($userData['description']) ? $user['description'] : null
         ]);
 
         return $this->_record;
